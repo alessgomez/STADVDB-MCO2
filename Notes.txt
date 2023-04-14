@@ -1,0 +1,20 @@
+1. 
+    *2 ways to disconnect:
+    disconnect
+    destroy
+    *to know if disconnected: connection.state
+
+2. 
+    READ:
+    1. if data is in node, 
+        - access locally
+    2. else,
+        - retrieve data from other fragmented node 
+        - if other fragmented node is down,
+            retrieve data from master node
+
+    WRITE/UPDATE:
+    1. write to data in master node 
+    2. <insert log, recovery strats>
+
+    
