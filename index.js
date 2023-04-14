@@ -4,13 +4,26 @@ const express = require('express')
 const app = express()
 const exphbs = require("express-handlebars")
 const flash = require('connect-flash');
-const mysql = require('mysql')
+//const mysql = require('mysql')
 
 app.set("view engine", "hbs")
 app.engine("hbs", exphbs.engine({extname: "hbs"}))
 app.use(express.urlencoded({extended: true}))
 app.use(express.static("public"))
 
+/*
+var con = mysql.createConnection({
+    host: "localhost",
+    user: "root",
+    password: "1234",
+    database: "h03_db"
+  });
+  
+  con.connect(function(err) {
+    if (err) throw err;
+    console.log("Connected!");
+  });
+*/
 /*app.use(cors({
     origin: '*',
     methods: '*'
