@@ -103,18 +103,18 @@ app.get('/search', async(req, res) => {
     }
 });
 
-app.get('/insert/:id/:title/:year/:rating/:genre/:director/:actor', async(req, res) => {
+app.post('/insertMovie', async(req, res) => {
     var data = [
-        req.params.id,
-        req.params.title,
-        req.params.year,
-        req.params.rating,
-        req.params.genre,
-        req.params.director,
-        req.params.actor
+        req.body.id,
+        req.body.title,
+        req.body.year,
+        req.body.genre,
+        req.body.director,
+        req.body.actor,
+        req.body.rank
     ]
 
-    connection[0].query("insert into accounts (title, year, rating, genre, director, actor) VALUES (?,?,?,?,?,?)", data, (err, result, fields) => {
+    connection[0].query("insert into accounts (id, title, year, genre, director, actor, rank) VALUES (?,?,?,?,?,?,?)", data, (err, result, fields) => {
         if (err) {
             return console.log(err);
         }
@@ -122,14 +122,18 @@ app.get('/insert/:id/:title/:year/:rating/:genre/:director/:actor', async(req, r
     })
 });
 
-app.get('/update/:id/:title', async(req, res) => {
+app.post('/updateMovie', async(req, res) => {
     var query = "UPDATE movie " +
         "SET title = ? " +
         "WHERE id = ?";
 
     var data = [
-        req.params.title,
-        req.params.id
+      req.body.title,
+      req.body.year,
+      req.body.genre,
+      req.body.director,
+      req.body.actor,
+      req.body.rank
     ];
 
     connection[0].query(query, data, (err, result, fields) => {
