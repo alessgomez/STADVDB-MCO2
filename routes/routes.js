@@ -15,15 +15,17 @@ app.get('/', async (req, res) => {
       db[1].query(query)
       .then (async data => {
          await db[1].commit();
-         console.log(data);
+         //console.log(data);
          try {
             await db[2].beginTransaction();
             const query = "SELECT * FROM movies";
             db[2].query(query)
             .then (async data => {
                await db[2].commit();
-               console.log(data);
-               res.render("UpdateMovies")
+               console.log("this")
+               //console.log(data);
+
+               res.render("ViewSearch", data)
             })
          } catch (error) { //Node 2 cannot begin transac, load half from Node 0
             console.log(error)
@@ -34,6 +36,7 @@ app.get('/', async (req, res) => {
                .then (async data => {
                   await db[0].commit();
                   console.log(data);
+                
                })
             } catch (error) { //Node 0 cannot begin transac, cannot load half of the data 
                console.log(error)
@@ -79,19 +82,30 @@ app.get('/', async (req, res) => {
 });
 
 app.get('/search', async(req, res) => {
+   console.log("search")
+   console.log(req.query.attribute)
    try {
       await db[1].beginTransaction();
-      const query = `SELECT * FROM movies WHERE ${req.query.attribute} = ${req.query.value}`
+      const query = `SELECT * FROM movies WHERE ${req.query.attribute} = '${req.query.value}'`
+      console.log(query)
       db[1].query(query)
       .then(async data => {
-         console.log(data)
+         //console.log(data)
+         console.log("search")
          await db[1].commit();
-         res.render("ViewSearch")
+         res.render('partials\\rows', data, function(err, html) {
+            if (err)
+            {
+                throw err;
+            } 
+            console.log("HTML: " + html);
+            res.send(html);
+        });
       })
    } catch (error) { //node 1 cannot begin transac, search in node 2
       try {
          await db[2].beginTransaction();
-         const query = `SELECT * FROM movies WHERE ${req.query.attribute} = ${req.query.value}`
+         const query = `SELECT * FROM movies WHERE ${req.query.attribute} = "${req.query.value}"`
          db[2].query(query)
                .then(async data => {
          console.log(data)
@@ -236,7 +250,37 @@ app.post('/update/:id', async(req, res) => {
 });
 
 app.get('/generateReport', async(req, res) => {
-    
+   const attributeName = req.query.attributeName
+   const agg = req.query.agg
+   console.log(attributeName)
+   console.log(agg)
+}); 
+
+
+app.get('/addMovies', async(req, res) => {
+   res.render("AddMovies")
+}); 
+
+app.get('/reports', async(req, res) => {
+ 
+   const data = {
+      isDirector: false,
+      isActor: false,
+      isGenre: false,
+      isCount: false,
+      isAverage: false,
+      attributeName: "",
+      agg: "",
+      results: []
+   }
+   res.render("Reports", data)
+}); 
+
+app.get('/updateMovies/:id', async(req, res) => {
+   const data = {
+      id: req.params.id
+   }
+   res.render("UpdateMovies", data)
 }); 
 
 module.exports = app;

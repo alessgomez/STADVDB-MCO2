@@ -8,27 +8,15 @@
 
         <div class="pages">
             <label id="pageslbl">Generate:</label>
-            <button class = "btn genBtn">Average Rating per Director</button>
-            <button class = "btn genBtn">Average Rating per Actor</button>
-            <button class = "btn genBtn">Number of Movies per Genre</button>
-            <button class = "btn genBtn">Number of Movies per Actor</button>
-            <button class = "btn genBtn">Number of Movies per Director</button>
+            <button class = "btn genBtn" id="genBtn1">Average Rating per Director</button>
+            <button class = "btn genBtn" id="genBtn2">Average Rating per Actor</button>
+            <button class = "btn genBtn" id="genBtn3">Number of Movies per Genre</button>
+            <button class = "btn genBtn" id="genBtn4">Number of Movies per Actor</button>
+            <button class = "btn genBtn" id="genBtn5">Number of Movies per Director</button>
         </div>
         
         <div id = "records-table">
-            <table>
-                <tr>
-                    <th id="th-header">ID</th>
-                    <th id="th-header">TITLE</th>
-                </tr>
-            
-                
-                <tr class="temp">
-                    <td>sampleId</td>
-                    <td>sampleTitle</td>
-                </tr>
-        
-            </table>
+            {{> reportRows this}}
         </div>
 
         <div class = "arrows">

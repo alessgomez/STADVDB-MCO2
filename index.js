@@ -5,7 +5,7 @@ const app = express()
 const exphbs = require("express-handlebars")
 const flash = require('connect-flash');
 const routes = require('./routes/routes.js')
-//const mysql = require('mysql')
+const mysql = require('mysql')
 
 app.set("view engine", "hbs")
 app.engine("hbs", exphbs.engine({extname: "hbs"}))

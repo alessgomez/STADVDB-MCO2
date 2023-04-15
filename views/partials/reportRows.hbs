@@ -1,0 +1,31 @@
+<table>
+    
+    <tr>
+        <th id="th-header">{{attributeName}}</th>
+        <th id="th-header">{{agg}}</th>
+    </tr>
+        
+
+    {{#each this.results}}
+    <tr class="temp">
+        {{#if isDirector}}
+        <td>{{director}}</td>
+        {{/if}}
+        {{#if isActor}}
+        <td>{{actor}}</td>
+        {{/if}}
+        {{#if isGenre}}
+        <td>{{genre}}</td>
+        {{/if}}
+
+        {{#if isCount}}
+        <td>{{count}}</td>
+        {{/if}}
+        {{#if isAverage}}
+        <td>{{average}}</td>
+        {{/if}}
+        
+    </tr>
+    {{/each}}
+            
+</table>
