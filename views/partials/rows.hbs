@@ -1,0 +1,24 @@
+<table>
+    <tr>
+        <th id="th-header">ID</th>
+        <th id="th-header">TITLE</th>
+        <th id="th-header">YEAR</th>
+        <th id="th-header">GENRE</th>
+        <th id="th-header">DIRECTOR</th>
+        <th id="th-header">ACTOR</th>
+        <th id="th-header">RATING</th>
+    </tr>
+
+    {{#each this}}
+    <tr class="temp">
+        <td><a  href="/updateMovies/{{id}}">{{id}}</a></td>
+        <td><a  href="/updateMovies/{{id}}">{{title}}</a></td>
+        <td><a  href="/updateMovies/{{id}}">{{year}}</a></td>
+        <td><a  href="/updateMovies/{{id}}">{{genre}}</a></td>
+        <td><a  href="/updateMovies/{{id}}">{{director}}</a></td>
+        <td><a  href="/updateMovies/{{id}}">{{actor}}</a></td>
+        <td><a  href="/updateMovies/{{id}}">{{rating}}</a></td>
+    </tr>
+    {{/each}}
+            
+</table>

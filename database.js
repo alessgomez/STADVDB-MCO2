@@ -5,21 +5,21 @@ var connection1 = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "1234",
-  database: "h03_db"
+  database: "movies0"
 });
 
 var connection2 = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "1234",
-  database: "h03_db"
+  database: "movies1"
 });
 
 var connection3 = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "1234",
-  database: "h03_db"
+  database: "movies2"
 });
 
 connection1.connect(function(err) {
