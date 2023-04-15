@@ -13,13 +13,31 @@ app.get('/', async(req, res) => {
    if (connection[1].state != "disconnected" && connection[2].state != "disconnected")
    {
       connection[1].query("START TRANSACTION", (err, result, fields) => {
-         connection[1].query("SELECT * FROM accounts", (err, result1, fields) => {
+         connection[1].query("SELECT * FROM movies", (err, result1, fields) => {
             connection[1].query("COMMIT", (err, result, fields) => {
                connection[2].query("START TRANSACTION", (err, result, fields) => {
-                  connection[2].query("SELECT * FROM accounts", (err, result2, fields) => {
+                  connection[2].query("SELECT * FROM movies", (err, result2, fields) => {
                      connection[2].query("COMMIT", (err, result, fields) => {
                         data = result1.concat(result2)
                         
+                        console.log(data)
+                     })
+                  })
+               })
+            })
+         })
+      })
+   }
+
+   else if (connection[1].state != "disconnected" && connection[2].state == "disconnected")
+   {
+      connection[1].query("START TRANSACTION", (err, result, fields) => {
+         connection[1].query("SELECT * FROM accounts", (err, result1, fields) => {
+            connection[1].query("COMMIT", (err, result, fields) => {
+               connection[0].query("START TRANSACTION", (err, result, fields) => {
+                  connection[0].query("SELECT * FROM movies WHERE year < 1980", (err, result2, fields) => {
+                     connection[0].query("COMMIT", (err, result, fields) => {
+                        data = result1.concat(result2)
                         console.log(data)
                      })
                   })
@@ -55,12 +73,50 @@ app.get('/updateMovies', async(req, res) => {
 
 
 app.get('/search', async(req, res) => {
-   connection[0].query("select * from accounts WHERE " + req.query.attribute + " = " + req.query.value, (err, result, fields) => {
-      if (err) {
-         return console.log(err);
-      }
-      return console.log(result);
-   })
+
+   if (connection[1].state != "disconnected")
+   {
+      connection[1].query("START TRANSACTION", (err, result, fields) => {
+         connection[1].query("SELECT * FROM accounts WHERE " +  req.query.attribute + " = " + req.query.value, (err, result1, fields) => {
+            connection[1].query("COMMIT", (err, result, fields) => {
+               if (result1.length == 0)
+               {
+                  connection[2].query("START TRANSACTION", (err, result, fields) => {
+                     connection[2].query("SELECT * FROM accounts WHERE " +  req.query.attribute + " = " + req.query.value, (err, result2, fields) => {
+                        connection[0].query("COMMIT", (err, result, fields) => {
+                           console.log(result2)
+                        })      
+                     })    
+                  })    
+               }
+               else 
+                  console.log(result1)
+            })
+         })
+      })
+   }
+
+   else if (connection[0].state != "disconnected") 
+   {
+      connection[0].query("START TRANSACTION", (err, result, fields) => {
+         connection[0].query("SELECT * FROM accounts WHERE " +  req.query.attribute + " = " + req.query.value, (err, result1, fields) => {
+            connection[0].query("COMMIT", (err, result, fields) => {
+               console.log(result1)
+            })      
+         })    
+      }) 
+   }
+
+   else if (connection[2].state != "disconnected") 
+   {
+      connection[2].query("START TRANSACTION", (err, result, fields) => {
+         connection[2].query("SELECT * FROM accounts WHERE " +  req.query.attribute + " = " + req.query.value, (err, result1, fields) => {
+            connection[2].query("COMMIT", (err, result, fields) => {
+               console.log(result1)
+            })      
+         })    
+      }) 
+   }
 }); 
 
 app.get('/insert/:id/:amount', async(req, res) => {
