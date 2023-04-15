@@ -1,4 +1,4 @@
-CREATE TABLE `movie` (
+CREATE TABLE `movies` (
   `id` int NOT NULL DEFAULT '0',
   `title` varchar(100) CHARACTER SET utf8mb3 DEFAULT NULL,
   `year` int DEFAULT NULL,
