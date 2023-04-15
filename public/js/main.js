@@ -20,7 +20,7 @@ $(document).ready(function(){
 
     $("#genBtn1").on("click", ()=>{
 
-        $.get('/generateReport', {attributeName: "director", agg: "average"}, function(html) {
+        $.get('/generateReport', {agg: "AVG", param: "rating"}, function(html) {
             $("#records-table").empty();
             $("#records-table").append(html);
         })    
@@ -28,35 +28,12 @@ $(document).ready(function(){
 
     $("#genBtn2").on("click", ()=>{
 
-        $.get('/generateReport', {attributeName: "actor", agg: "average"}, function(html) {
+        $.get('/generateReport', {agg: "COUNT", param: "*"}, function(html) {
             $("#records-table").empty();
             $("#records-table").append(html);
         })    
     })
 
-    $("#genBtn3").on("click", ()=>{
-
-        $.get('/generateReport', {attributeName: "genre", agg: "count"}, function(html) {
-            $("#records-table").empty();
-            $("#records-table").append(html);
-        })    
-    })
-
-    $("#genBtn4").on("click", ()=>{
-
-        $.get('/generateReport', {attributeName: "actor", agg: "count"}, function(html) {
-            $("#records-table").empty();
-            $("#records-table").append(html);
-        })    
-    })
-
-    $("#genBtn5").on("click", ()=>{
-
-        $.get('/generateReport', {attributeName: "director", agg: "count"}, function(html) {
-            $("#records-table").empty();
-            $("#records-table").append(html);
-        })    
-    })
 
 
 });
