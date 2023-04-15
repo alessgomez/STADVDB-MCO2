@@ -1,0 +1,203 @@
+//load all
+if (connection[1].state != "disconnected" && connection[2].state != "disconnected")
+{
+   connection[1].query("START TRANSACTION", (err, result, fields) => {
+      connection[1].query("SELECT * FROM movies", (err, result1, fields) => {
+         connection[1].query("COMMIT", (err, result, fields) => {
+            connection[2].query("START TRANSACTION", (err, result, fields) => {
+               connection[2].query("SELECT * FROM movies", (err, result2, fields) => {
+                  connection[2].query("COMMIT", (err, result, fields) => {
+                     data = result1.concat(result2)
+                     
+                     console.log(data)
+                  })
+               })
+            })
+         })
+      })
+   })
+}
+
+else if (connection[1].state != "disconnected" && connection[2].state == "disconnected")
+{
+   connection[1].query("START TRANSACTION", (err, result, fields) => {
+      connection[1].query("SELECT * FROM accounts", (err, result1, fields) => {
+         connection[1].query("COMMIT", (err, result, fields) => {
+            connection[0].query("START TRANSACTION", (err, result, fields) => {
+               connection[0].query("SELECT * FROM movies WHERE year < 1980", (err, result2, fields) => {
+                  connection[0].query("COMMIT", (err, result, fields) => {
+                     data = result1.concat(result2)
+                     console.log(data)
+                  })
+               })
+            })
+         })
+      })
+   })
+}
+
+else 
+{
+   connection[0].query("START TRANSACTION", (err, result, fields) => {
+      connection[0].query("SELECT * FROM accounts", (err, result1, fields) => {
+         connection[0].query("COMMIT", (err, result, fields) => {
+            console.log(result1)
+         })      
+      })      
+   })         
+} 
+
+
+//for search
+
+
+if (connection[1].state != "disconnected")
+{
+   connection[1].query("START TRANSACTION", (err, result, fields) => {
+      connection[1].query("SELECT * FROM accounts WHERE " +  req.query.attribute + " = " + req.query.value, (err, result1, fields) => {
+         connection[1].query("COMMIT", (err, result, fields) => {
+            if (result1.length == 0)
+            {
+               connection[2].query("START TRANSACTION", (err, result, fields) => {
+                  connection[2].query("SELECT * FROM accounts WHERE " +  req.query.attribute + " = " + req.query.value, (err, result2, fields) => {
+                     connection[0].query("COMMIT", (err, result, fields) => {
+                        console.log(result2)
+                     })      
+                  })    
+               })    
+            }
+            else 
+               console.log(result1)
+         })
+      })
+   })
+}
+
+else if (connection[0].state != "disconnected") 
+{
+   connection[0].query("START TRANSACTION", (err, result, fields) => {
+      connection[0].query("SELECT * FROM accounts WHERE " +  req.query.attribute + " = " + req.query.value, (err, result1, fields) => {
+         connection[0].query("COMMIT", (err, result, fields) => {
+            console.log(result1)
+         })      
+      })    
+   }) 
+}
+
+else if (connection[2].state != "disconnected") 
+{
+   connection[2].query("START TRANSACTION", (err, result, fields) => {
+      connection[2].query("SELECT * FROM accounts WHERE " +  req.query.attribute + " = " + req.query.value, (err, result1, fields) => {
+         connection[2].query("COMMIT", (err, result, fields) => {
+            console.log(result1)
+         })      
+      })    
+   }) 
+}
+
+
+// for insert
+
+1. If Node 0 is up, 
+- insert to Node 0
+- propagate insert to corresponding secondary Node
+2. If Node 0 is DOWN,
+- insert to the corresponding node 
+- write the insert to the recovery log kung kanino sya niwrite
+
+
+
+
+
+
+
+if (connection[0].state != "disconnected")
+{
+connection[0].query("START TRANSACTION", data, (err, result, fields) => {
+   // todo: write update to recovery log
+   console.log(result)
+})
+
+connection[0].query("insert into accounts (id, amount) VALUES (?,?)", data, (err, result, fields) => {
+   // todo: write update to recovery log
+   console.log(result)
+})
+}
+else if (req.params.year < 1980) 
+{
+connection[1].query("insert into accounts (id, amount) VALUES (?,?)", data, (err, result, fields) => {
+   // todo: write update to recovery log
+   console.log(result)
+})
+}
+else // store in connection2
+{
+connection[2].query("insert into accounts (id, amount) VALUES (?,?)", data, (err, result, fields) => {
+   // todo: write update to recovery log
+   console.log(result)
+})
+}
+}); 
+
+app.get('/update/:id/:amount', async(req, res) => {
+var query = "UPDATE accounts " +
+"SET amount = ? " +
+"WHERE id = ?";
+
+var data = [
+req.params.amount,
+req.params.id
+];
+
+if (connection[0].state != "disconnected")
+{
+connection[0].query(query, data, (err, result, fields) => {
+   // todo: write update to recovery log
+   console.log(result)
+})
+}
+else if (req.params.year < 1980) 
+{
+connection[1].query(query, data, (err, result, fields) => {
+   // todo: write update to recovery log
+   console.log(result)
+})
+}
+else // store in connection2
+{
+connection[2].query(query, data, (err, result, fields) => {
+   // todo: write update to recovery log
+   console.log(result)
+})
+}
+
+//update
+1. Node 0 is up
+- update Node 0
+- propagate update to corresponding slave Node
+2. Node 0 is NOT up
+- update corresponding slave Node
+- write to log
+- recover 
+
+if (connection[0].state != "disconnected")
+{
+connection[0].query(query, data, (err, result, fields) => {
+// todo: write update to recovery log
+console.log(result)
+})
+}
+else if (req.params.year < 1980) 
+{
+connection[1].query(query, data, (err, result, fields) => {
+// todo: write update to recovery log
+console.log(result)
+})
+}
+else // store in connection2
+{
+connection[2].query(query, data, (err, result, fields) => {
+// todo: write update to recovery log
+console.log(result)
+})
+}

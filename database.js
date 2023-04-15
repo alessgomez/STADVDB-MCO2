@@ -1,4 +1,5 @@
 var mysql = require('mysql');
+const bluebird = require('bluebird');
 
 var connection1 = mysql.createConnection({
   host: "localhost",
@@ -35,6 +36,10 @@ connection3.connect(function(err) {
   if (err) throw err;
   console.log("Connection 3 Connected!");
 });
+
+connection1.query = bluebird.promisify(connection1.query);
+connection2.query = bluebird.promisify(connection2.query);
+connection3.query = bluebird.promisify(connection3.query);
 
 module.exports = [
   connection1,

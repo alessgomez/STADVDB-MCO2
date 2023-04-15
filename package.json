@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/alessgomez/STADVDB-MCO2#readme",
   "dependencies": {
+    "bluebird": "^3.7.2",
     "connect-flash": "^0.1.1",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
