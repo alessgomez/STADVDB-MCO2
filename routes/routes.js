@@ -7,6 +7,8 @@ const connection = [];
 [connection[0], connection[1], connection[2]] = require("../database")
 
 app.get('/', async(req, res) => {
+   //res.render("ViewSearch");
+   
    connection[1].destroy();
    if (connection[1].state != "disconnected" && connection[2].state != "disconnected")
    {
@@ -17,6 +19,7 @@ app.get('/', async(req, res) => {
                   connection[2].query("SELECT * FROM accounts", (err, result2, fields) => {
                      connection[2].query("COMMIT", (err, result, fields) => {
                         data = result1.concat(result2)
+                        
                         console.log(data)
                      })
                   })
@@ -35,8 +38,21 @@ app.get('/', async(req, res) => {
             })      
          })      
       })         
-   }
+   } 
+});
+
+app.get('/addMovies', async(req, res) => {
+   res.render("AddMovies")
 }); 
+
+app.get('/reports', async(req, res) => {
+   res.render("Reports")
+}); 
+
+app.get('/updateMovies', async(req, res) => {
+   res.render("UpdateMovies")
+}); 
+
 
 app.get('/search', async(req, res) => {
    connection[0].query("select * from accounts WHERE " + req.query.attribute + " = " + req.query.value, (err, result, fields) => {

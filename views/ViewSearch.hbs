@@ -1,0 +1,63 @@
+  <div class="container" id="records">
+            <div class="pages">
+                <label id="pageslbl">Pages:</label>
+                <button class = "btn" id="viewSearchBtn" onclick="window.location.href='http://localhost:3000/';" >View and Search</button>
+                <button class = "btn" id="addBtn" onclick="window.location.href='http://localhost:3000/addMovies';">Add Movies </button>
+                <button class = "btn" id="reportsBtn" onclick="window.location.href='http://localhost:3000/reports';">Generate Reports</button>
+            </div>
+            <div class = "Filter">
+                <label class = "lbl">Filter by:</label>
+                    <select name="filter-options" id="filter-options">
+                        <option value="All" selected>All</option>
+                        <option value="Uploading Requirements">Uploading Requirements</option>
+                        <option value="Adding Representative">Adding Representative</option>
+                        <option value="Printing and Preparing Documents">Printing and Preparing Documents</option>
+                        <option value="Waiting for Survey Schedule">Waiting for Survey Schedule</option>
+                        <option value="Pending Surveyor Visit">Pending Surveyor Visit</option>
+                        <option value="Purchasing of Materials">Purchasing of Materials</option>
+                        <option value="Pending Onsite Visit">Pending Onsite Visit</option>
+                        <option value="Pending Installation">Pending Installation</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Archived">Archived</option>
+                    </select>
+            </div>
+            
+            <div class = "inputField">
+                <input id = "search" type="text" placeholder="Search..">
+            </div>
+                       
+            <div class = "applyfilter">
+                <button class = "btn" id="applyFilterBtn">APPLY FILTER</button>
+            </div>
+
+            <div id = "records-table">
+                <table>
+                    <tr>
+                        <th id="th-header">ID</th>
+                        <th id="th-header">TITLE</th>
+                        <th id="th-header">YEAR</th>
+                        <th id="th-header">GENRE</th>
+                        <th id="th-header">DIRECTOR</th>
+                        <th id="th-header">ACTOR</th>
+                        <th id="th-header">RANK</th>
+                    </tr>
+                
+                    
+                    <tr class="temp">
+                        <td><a  href="/updateMovies">sampleId</a></td>
+                        <td><a  href="/updateMovies">sampleTitle</a></td>
+                        <td><a  href="/updateMovies">sampleYear</a></td>
+                        <td><a  href="/updateMovies">sampleGenre</a></td>
+                        <td><a  href="/updateMovies">sampleDirector</a></td>
+                        <td><a  href="/updateMovies">sampleActor</a></td>
+                        <td><a  href="/updateMovies">sampleRank</a></td>
+                    </tr>
+            
+                </table>
+            </div>
+
+            <div class = "arrows">
+                <button class = "btn" id="prevBtn">&lt;</button>
+                <button class = "btn" id="nextBtn">&gt;</button>
+            </div>
+        </div>

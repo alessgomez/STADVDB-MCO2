@@ -4,6 +4,7 @@ const express = require('express')
 const app = express()
 const exphbs = require("express-handlebars")
 const flash = require('connect-flash');
+const routes = require('./routes/routes.js')
 //const mysql = require('mysql')
 
 app.set("view engine", "hbs")
@@ -46,7 +47,7 @@ app.use(flash());
 
 app.use(express.json())
 
-const routes = require('./routes/routes.js')
+
 app.use('/', routes)
 
 /*

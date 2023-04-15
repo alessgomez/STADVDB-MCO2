@@ -1,0 +1,48 @@
+<div class="container">
+            <div class="pagesForm" id="pagesAddMovies">
+                <label id="pageslbl">Pages:</label>
+                <button class = "btn" id="viewSearchBtn" onclick="window.location.href='http://localhost:3000/';" >View and Search</button>
+                <button class = "btn" id="addBtn" onclick="window.location.href='http://localhost:3000/addMovies';">Add Movies </button>
+                <button class = "btn" id="reportsBtn" onclick="window.location.href='http://localhost:3000/reports';">Generate Reports</button>
+            </div>
+
+            <form action="/" method="post" id="addForm">
+                <div class="input-pair"> 
+                    <label class="lbl input-lbl" for="id"><b>ID: </b></label><br>
+                    <input class="input-box" type="text" placeholder="" id="id" name="id" required>
+                </div>
+
+                <div class="input-pair">
+                    <label class="lbl input-lbl" for="title"><b>Title: </b></label><br>
+                    <input class="input-box" type="text" placeholder="" id="title" name="title" required> 
+                </div>
+                
+                <div class="input-pair">
+                    <label class="lbl input-lbl" for="year"><b>Year: </b></label><br>
+                    <input class="input-box" type="text" placeholder="" id="year" name="year" required>
+                </div>
+
+                <div class="input-pair">
+                    <label class="lbl input-lbl" for="genre"><b>Genre: </b></label><br>
+                    <input class="input-box" type="text" placeholder="" id="genre" name="genre" required>
+                </div>
+
+                <div class="input-pair">
+                    <label class="lbl input-lbl" for="director"><b>Director: </b></label><br>
+                    <input class="input-box" type="text" placeholder="" id="director" name="director" required>
+                </div>
+
+                <div class="input-pair">
+                    <label class="lbl input-lbl" for="actor"><b>Actor: </b></label><br>
+                    <input class="input-box" type="text" placeholder="" id="actor" name="actor" required>
+                </div>
+
+                <div class="input-pair">
+                    <label class="lbl input-lbl" for="rank"><b>Rank: </b></label><br>
+                    <input class="input-box" type="text" placeholder="" id="rank" name="rank" required>
+                </div>
+
+                <button class = "btn" type="submit" id="submitBtn"><strong>Add Movie</strong></button>
+            </form>
+
+        </div>

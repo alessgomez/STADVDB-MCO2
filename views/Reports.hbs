@@ -1,0 +1,38 @@
+<div class="container" id="records">
+        <div class="pages">
+            <label id="pageslbl">Pages:</label>
+            <button class = "btn" id="viewSearchBtn" onclick="window.location.href='http://localhost:3000/';" >View and Search</button>
+            <button class = "btn" id="addBtn" onclick="window.location.href='http://localhost:3000/addMovies';">Add Movies </button>
+            <button class = "btn" id="reportsBtn" onclick="window.location.href='http://localhost:3000/reports';">Generate Reports</button>
+        </div>
+
+        <div class="pages">
+            <label id="pageslbl">Generate:</label>
+            <button class = "btn genBtn">Average Rating per Director</button>
+            <button class = "btn genBtn">Average Rating per Actor</button>
+            <button class = "btn genBtn">Number of Movies per Genre</button>
+            <button class = "btn genBtn">Number of Movies per Actor</button>
+            <button class = "btn genBtn">Number of Movies per Director</button>
+        </div>
+        
+        <div id = "records-table">
+            <table>
+                <tr>
+                    <th id="th-header">ID</th>
+                    <th id="th-header">TITLE</th>
+                </tr>
+            
+                
+                <tr class="temp">
+                    <td>sampleId</td>
+                    <td>sampleTitle</td>
+                </tr>
+        
+            </table>
+        </div>
+
+        <div class = "arrows">
+            <button class = "btn" id="prevBtn">&lt;</button>
+            <button class = "btn" id="nextBtn">&gt;</button>
+        </div>
+    </div>
