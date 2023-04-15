@@ -3,22 +3,22 @@ var mysql = require('mysql');
 var connection1 = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "120301",
-  database: "h03"
+  password: "1234",
+  database: "h03_db"
 });
 
 var connection2 = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "120301",
-  database: "h03"
+  password: "1234",
+  database: "h03_db"
 });
 
 var connection3 = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "120301",
-  database: "h03"
+  password: "1234",
+  database: "h03_db"
 });
 
 connection1.connect(function(err) {
