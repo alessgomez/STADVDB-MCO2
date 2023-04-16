@@ -538,7 +538,7 @@ app.post('/insertMovie', async(req, res) => {
    })
    .then(result => {
       logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'START TRANSACTION 1')`)
-      db[0].destroy();
+      //db[0].destroy();
    })
    .then(async result => {
       console.log("444")
@@ -679,7 +679,7 @@ app.post('/update/:id/:year/:title', async(req, res) => {
    })
    .then(query => {
       logDb[0].query(`INSERT INTO log(transaction_no, row_no, col_name, old_value, new_value, query) VALUES (${transacNo}, ${req.params.id}, 'title', '${oldTitle}', '${req.body.title}', "${query}")`)
-      db[0].destroy()
+      //db[0].destroy()
       return query
    })
    .then(async query => {
