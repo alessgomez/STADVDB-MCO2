@@ -33,7 +33,14 @@ $(document).ready(function(){
             $("#records-table").append(html);
         })    
     })
+    /*
 
+    $("#toggleConBtn").on("click", ()=>{
+
+        $.get('/toggle', function() {
+         
+        })    
+    })*/
 
 
 });
