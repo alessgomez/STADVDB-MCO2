@@ -696,65 +696,73 @@ app.post('/update/:id/:year/:title', async(req, res) => {
    .then(result => {
       console.log("888")
       logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'COMMIT')`)
+      db[0].destroy()
+   })
+   .then(async result => {
+      console.log("999")
+      
+      try {
+         await db[0].commit()
+      } catch(error) {
+         await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+         await updateInNewMaster(id, year, title, req.body.title);
+         throw error         
+      }
+   })
+   .then(result => { //propagate update
+      console.log("year!! + " + year)
+      if (year < 1980)
+         slaveInd = 1;
+      else 
+         slaveInd = 2;
+      return slaveInd
+   })
+   .then(slaveInd => {
+      console.log("SLAVE INDEX!!!!   " + slaveInd)
+      return logDb[slaveInd].query("SELECT MAX(transaction_no) AS max FROM log")
    })
    .then(result => {
-      console.log("999")
-      db[0].commit()
-      .then(result => { //propagate update
-         console.log("year!! + " + year)
-         if (year < 1980)
-            slaveInd = 1;
-         else 
-            slaveInd = 2;
-         return slaveInd
-      })
-      .then(slaveInd => {
-         console.log("SLAVE INDEX!!!!   " + slaveInd)
-         return logDb[slaveInd].query("SELECT MAX(transaction_no) AS max FROM log")
-      })
-      .then(result => {
-         console.log(result[0].max +" !!!!! ")
-         if (result[0].max == null)
-            transacNo = 0
-         else 
-            transacNo = result[0].max + 1
-      })
-      .then(result => {
-         logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'START')`)
-      })
-      .then(async result => {
-         try {
-            await db[slaveInd].beginTransaction();
-         } catch(error) {
-            await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
-            throw error
-         }
-      })
-      .then(result => {
-         const query = `UPDATE movies SET title = '${req.body.title}' WHERE id = ${req.params.id}`;
-         return query;
-      })
-      .then(query => {
-         logDb[slaveInd].query(`INSERT INTO log(transaction_no, row_no, col_name, old_value, new_value, query) VALUES (${transacNo}, ${req.params.id}, 'title', '${oldTitle}', '${req.body.title}', "${query}")`)
-         return query;
-      })
-      .then(async query => {
-         try {
-            await db[slaveInd].query(query)
-         } catch(error) {
-            await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
-            throw error
-         }
-      })
-      .then(result => {
-         logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'COMMIT')`) 
-      })
-      .then(result => {
-         db[slaveInd].commit();
-      })
-      .then(result => {
-         //todo res.render
-      })
+      console.log(result[0].max +" !!!!! ")
+      if (result[0].max == null)
+         transacNo = 0
+      else 
+         transacNo = result[0].max + 1
+   })
+   .then(result => {
+      logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'START')`)
+   })
+   .then(async result => {
+      try {
+         await db[slaveInd].beginTransaction();
+      } catch(error) {
+         await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+         throw error
+      }
+   })
+   .then(result => {
+      const query = `UPDATE movies SET title = '${req.body.title}' WHERE id = ${req.params.id}`;
+      return query;
+   })
+   .then(query => {
+      logDb[slaveInd].query(`INSERT INTO log(transaction_no, row_no, col_name, old_value, new_value, query) VALUES (${transacNo}, ${req.params.id}, 'title', '${oldTitle}', '${req.body.title}', "${query}")`)
+      return query;
+   })
+   .then(async query => {
+      try {
+         await db[slaveInd].query(query)
+      } catch(error) {
+         await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+         throw error
+      }
+   })
+   .then(result => {
+      logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'COMMIT')`) 
+   })
+   .then(result => {
+      db[slaveInd].commit();
+   })
+   .then(result => {
+      //todo res.render
    })
 });
 
