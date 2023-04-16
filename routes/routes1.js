@@ -190,8 +190,112 @@ async function recover(){
    */
 }
 
+async function reintegrateAll() {
+   await reintegrate0();
+   await reintegrate1();
+   await reintegrate2();
+}
 
-async function reintegrate() {
+async function reintegrate0() {
+   try {
+      console.log("reintegrate")
+      // get all movies from node 1
+      const query = "SELECT * FROM movies FOR UPDATE"
+      await db[0].query(query)
+      .then (async data => {
+         //console.log(data)
+         try {
+            // get all movies from node 1 that are before 1980
+            await db[1].query("SELECT * FROM movies")
+            .then (async data1 => {
+               await db[2].query("SELECT * FROM movies")
+               .then (async data2 => {
+                  
+                  //console.log(data1)
+                  console.log("data node1: " + data.length)
+                  console.log("data node0: " + data1.length)
+                  // for each movie <1980 in node 0
+                  //console.log(data)
+                  // data1 = all records from nodes 1 and 2
+                  data1 = data1.concat(data2)
+
+                  for (let i = 0; i < data1.length; i++) // 
+                  {
+                     // if node 0 already has a record corresponding to the current movie from node 1/2
+                     var colId = []
+                     
+                     for (let j = 0; j < data.length; j++)
+                     {
+                        colId[j] = data[j].id
+                     }
+
+                     //console.log(colId)
+                     console.log("i: " + i)
+                     if (colId.includes(data1[i].id))
+                     {
+                        console.log("includes")
+                        try{
+                              // update node 0 with the values from node 1/2
+                              const query = `UPDATE movies SET title = "${data1[i].title}" WHERE id = ${data1[i].id}`
+                              console.log(query)
+                              await db[0].query(query)
+                              .then (() => {
+                                 console.log("updated")
+                                 return new Promise(function(resolve, reject) {
+                                    resolve('start of new Promise');
+                                    });
+                                 
+                              })
+               
+                           
+
+                        }
+                        catch (error) {
+                           
+                        }
+                        
+                     }
+                     // else if node 0 does not yet have a record corresponding to the current movie from node 1/2
+                     else
+                     {
+                        console.log("does not include")
+                        try{
+                              // insert a new record in node 1
+                              const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor) VALUES (${data1[i].id}, "${data1[i].title}", ${data1[i].year}, ${data1[i].rating}, '${data1[i].genre}', '${data1[i].director}', '${data1[i].actor}')`
+                              console.log(query)
+                              await db[0].query(query)
+                              .then (() => {
+                              console.log("inserted")
+                              return new Promise(function(resolve, reject) {
+                                 resolve('start of new Promise');
+                                 });
+                              
+                           })
+                        
+                        }
+                        catch (error) {
+                           
+                        }
+      
+
+                     }
+               
+                  }
+               })
+
+            })
+         }  catch (error) { 
+
+         }
+      })
+   } catch (error) {
+
+   }
+ 
+   
+}
+
+async function reintegrate1() {
    try {
       console.log("reintegrate")
       // get all movies from node 1
@@ -253,6 +357,100 @@ async function reintegrate() {
                            const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor) VALUES (${data1[i].id}, "${data1[i].title}", ${data1[i].year}, ${data1[i].rating}, '${data1[i].genre}', '${data1[i].director}', '${data1[i].actor}')`
                            console.log(query)
                            await db[1].query(query)
+                           .then (() => {
+                           console.log("inserted")
+                           return new Promise(function(resolve, reject) {
+                              resolve('start of new Promise');
+                              });
+                           
+                        })
+                     
+                     }
+                     catch (error) {
+                        
+                     }
+   
+
+                  }
+            
+               }
+
+
+
+            })
+         }  catch (error) { 
+
+         }
+      })
+   } catch (error) {
+
+   }
+ 
+   
+}
+
+async function reintegrate2() {
+   try {
+      console.log("reintegrate")
+      // get all movies from node 2
+      const query = "SELECT * FROM movies FOR UPDATE"
+      await db[2].query(query)
+      .then (async data => {
+         //console.log(data)
+         try {
+            // get all movies from node 0 that are >= 1980
+            await db[0].query("SELECT * FROM movies WHERE year >= 1980")
+            .then (async data1 => {
+
+               //console.log(data1)
+               console.log("data node1: " + data.length)
+               console.log("data node0: " + data1.length)
+               // for each movie <1980 in node 0
+               //console.log(data)
+               for (let i = 0; i < data1.length; i++) // 
+               {
+                  // if node 1 already has a record corresponding to the current movie from node 0
+                  var colId = []
+                  
+                  for (let j = 0; j < data.length; j++)
+                  {
+                     colId[j] = data[j].id
+                  }
+                  //console.log(colId)
+                  console.log("i: " + i)
+                  if (colId.includes(data1[i].id))
+                  {
+                     console.log("includes")
+                     try{
+                           // update node 2 with the values from node 0
+                           const query = `UPDATE movies SET title = "${data1[i].title}" WHERE id = ${data1[i].id}`
+                           console.log(query)
+                           await db[2].query(query)
+                           .then (() => {
+                              console.log("updated")
+                              return new Promise(function(resolve, reject) {
+                                 resolve('start of new Promise');
+                                 });
+                              
+                           })
+            
+                        
+
+                     }
+                     catch (error) {
+                        
+                     }
+                     
+                  }
+                  // else if node 1 does not yet have a record corresponding to the current movie from node 0
+                  else
+                  {
+                     console.log("does not include")
+                     try{
+                           // insert a new record in node 2
+                           const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor) VALUES (${data1[i].id}, "${data1[i].title}", ${data1[i].year}, ${data1[i].rating}, '${data1[i].genre}', '${data1[i].director}', '${data1[i].actor}')`
+                           console.log(query)
+                           await db[2].query(query)
                            .then (() => {
                            console.log("inserted")
                            return new Promise(function(resolve, reject) {
@@ -399,7 +597,7 @@ function insertInNewMaster(req) {
 app.get('/', async (req, res) => {
    try { 
       await recover()
-      await reintegrate()
+      await reintegrateAll()
       .then (async res => {
          await db[1].beginTransaction();
          const query = "SELECT * FROM movies";
