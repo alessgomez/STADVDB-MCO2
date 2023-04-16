@@ -394,14 +394,13 @@ function insertInNewMaster(req) {
 
 app.get('/', async (req, res) => {
    try { 
-      //await recover()
-      //await reintegrate()
-      await db[1].beginTransaction();
-      const query = "SELECT * FROM movies";
-      return db[1].query(query)
-      //.then (async res => {
-        
-      //})
+      await recover()
+      await reintegrate()
+      .then (async res => {
+         await db[1].beginTransaction();
+         const query = "SELECT * FROM movies";
+         return db[1].query(query)
+      })
       .then (async data1 => {
          await db[1].commit();
          try {
