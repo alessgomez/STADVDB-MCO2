@@ -152,7 +152,7 @@ async function recover(){
                      // restore the old values
                      var query2 = ""
                      if (currLogs[k].new_value != null)
-                        query2 = `UPDATE movies SET ${currLogs[k].col_name} = '${currLogs[k].new_value}' WHERE id = ${logs[k].row_no}`;
+                        query2 = `UPDATE movies SET ${currLogs[k].col_name} = '${currLogs[k].new_value}' WHERE id = ${currLogs[k].row_no}`;
                      else  
                         query2 = currLogs[k].query
                      console.log("query: " + query2)
@@ -410,6 +410,7 @@ app.get('/', async (req, res) => {
             .then (async data2 => {
                await db[2].commit();
                var data = await data1.concat(data2)
+               console.log("FROM DB1 AND DB2")
                res.render("ViewSearch", data)
             })
          } catch (error) { //Node 2 cannot begin transac, load half from Node 0
@@ -420,6 +421,7 @@ app.get('/', async (req, res) => {
                db[0].query(query)
                .then (async data => {
                   await db[0].commit();
+                  console.log("FROM DB1 AND DB0")
                   res.render("ViewSearch", data)
                })
             } catch (error) { //Node 0 cannot begin transac, cannot load half of the data 
@@ -442,6 +444,7 @@ app.get('/', async (req, res) => {
                .then (async data2 => {
                   await db[0].commit();
                   var data = await data1.concat(data2)
+                  console.log("FROM DB2 AND DB0")
                   res.render("ViewSearch", data)
                })
             } catch (error) { //Node 0 cannot begin transac, cannot load half of the data 
@@ -456,6 +459,7 @@ app.get('/', async (req, res) => {
             db[0].query(query)
             .then (async data => {
                await db[0].commit();
+               console.log("FROM DB0")
                res.render("ViewSearch", data)
             })
          } catch (error) { //Node 0 cannot begin transac, cannot load any data
@@ -546,6 +550,7 @@ app.post('/insertMovie', async(req, res) => {
       } catch(error) {
          await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
          await insertInNewMaster(req);
+         res.redirect("/addMovies")
          throw error
       }
    })
@@ -565,6 +570,7 @@ app.post('/insertMovie', async(req, res) => {
          console.log(error)
          await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
          await insertInNewMaster(req);
+         res.redirect("/addMovies")
          throw error
       }
    })
@@ -628,7 +634,8 @@ app.post('/insertMovie', async(req, res) => {
          db[slaveInd].commit();
       })
       .then(result => {
-         //todo res.render
+         res.redirect("/addMovies")
+         
       })
    })
 }); 
@@ -656,6 +663,7 @@ app.post('/update/:id/:year/:title', async(req, res) => {
       } catch (error) {
          await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
          await updateInNewMaster(id, year, title, req.body.title);
+         res.redirect("/")
          throw error         
       }
    })
@@ -671,6 +679,7 @@ app.post('/update/:id/:year/:title', async(req, res) => {
       } catch(error) {
          await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
          await updateInNewMaster(id, year, title, req.body.title);
+         res.redirect("/")
          throw error
       }
    })
@@ -690,6 +699,7 @@ app.post('/update/:id/:year/:title', async(req, res) => {
       } catch (error) {
          await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
          await updateInNewMaster(id, year, title, req.body.title);
+         res.redirect("/")
          throw error
       }
    })
@@ -706,6 +716,7 @@ app.post('/update/:id/:year/:title', async(req, res) => {
       } catch(error) {
          await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
          await updateInNewMaster(id, year, title, req.body.title);
+         res.redirect("/")
          throw error         
       }
    })
@@ -762,7 +773,7 @@ app.post('/update/:id/:year/:title', async(req, res) => {
       db[slaveInd].commit();
    })
    .then(result => {
-      //todo res.render
+      res.redirect("/")
    })
 });
 
@@ -774,7 +785,7 @@ app.get('/generateReport', async(req, res) => {
       db[0].query(query)
       .then(async data => {
          await db[0].commit();
-         //res.render
+         //res.redirect("/")
          var isCount = false;
          var isAverage = false;
          if (req.query.agg == "COUNT")
@@ -814,6 +825,26 @@ app.get('/generateReport', async(req, res) => {
                .then(async data2 => {
                   await db[2].commit();
                   data = data1.concat(data2)
+                  var isCount = false;
+                  var isAverage = false;
+                  if (req.query.agg == "COUNT")
+                     isCount = true
+                  else
+                     isAverage = true
+                  const results = {
+                     data: data,
+                     agg: req.query.agg,
+                     isCount: isCount,
+                     isAverage: isAverage
+                  }
+                  res.render('partials\\reportRows', results, function(err, html) {
+                     if (err)
+                     {
+                         throw err;
+                     } 
+                     //console.log("HTML: " + html);
+                     res.send(html);
+                 });
                   //res.render
                })
                
@@ -829,6 +860,26 @@ app.get('/generateReport', async(req, res) => {
             db[2].query(query)
             .then(async data => {
                await db[2].commit();
+               var isCount = false;
+               var isAverage = false;
+               if (req.query.agg == "COUNT")
+                  isCount = true
+               else
+                  isAverage = true
+               const results = {
+                  data: data,
+                  agg: req.query.agg,
+                  isCount: isCount,
+                  isAverage: isAverage
+               }
+               res.render('partials\\reportRows', results, function(err, html) {
+                  if (err)
+                  {
+                      throw err;
+                  } 
+                  //console.log("HTML: " + html);
+                  res.send(html);
+              });
                //res.render
             })
          } catch (error) { //node 2 cannot begin transac
@@ -837,19 +888,6 @@ app.get('/generateReport', async(req, res) => {
       }
 
    }
-   /*
-   SELECT YEAR, ${req.query.agg}(${req.query.param}) AS ${req.query.agg} FROM movies GROUP BY YEAR
-   */ 
-
-
-
-
-   /*
-   const attributeName = req.query.attributeName
-   const agg = req.query.agg
-   console.log(attributeName)
-   console.log(agg)
-   */
 }); 
 
 
@@ -879,6 +917,16 @@ app.get('/updateMovies/:id/:year/:title', async(req, res) => {
       title: req.params.title
    }
    res.render("UpdateMovies", data)
+}); 
+
+app.get('/toggle', async(req, res) => {
+   db[1].end()
+   db[1].connect(function(err) {
+      if (err) throw err;
+      console.log("Db 1 Connected!");
+    });
+
+   res.redirect("/")
 }); 
 
 module.exports = app;
