@@ -2,42 +2,42 @@ var mysql = require('mysql');
 const bluebird = require('bluebird');
 
 var connection1 = mysql.createConnection({
-  host: "127.0.0.1",
+  host: "172.16.3.121",
   user: "group11",
   password: "group11",
   database: "mco2_imdb"
 });
 
 var connection2 = mysql.createConnection({
-  host: "127.0.0.1",
+  host: "172.16.3.122",
   user: "group11",
   password: "group11",
   database: "mco2_imdb"
 });
 
 var connection3 = mysql.createConnection({
-  host: "127.0.0.1",
+  host: "172.16.3.123",
   user: "group11",
   password: "group11",
   database: "mco2_imdb"
 });
 
 var connection4 = mysql.createConnection({
-  host: "127.0.0.1",
+  host: "172.16.3.121",
   user: "group11",
   password: "group11",
   database: "recovery0"
 });
 
 var connection5 = mysql.createConnection({
-  host: "127.0.0.1",
+  host: "172.16.3.122",
   user: "group11",
   password: "group11",
   database: "recovery1"
 });
 
 var connection6 = mysql.createConnection({
-  host: "127.0.0.1",
+  host: "172.16.3.123",
   user: "group11",
   password: "group11",
   database: "recovery2"
