@@ -2,44 +2,44 @@ var mysql = require('mysql');
 const bluebird = require('bluebird');
 
 var connection1 = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "1234",
-  database: "movies0"
+  host: "127.0.0.1",
+  user: "group11",
+  password: "group11",
+  database: "mco2_imdb"
 });
 
 var connection2 = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "1234",
-  database: "movies1"
+  host: "127.0.0.1",
+  user: "group11",
+  password: "group11",
+  database: "mco2_imdb"
 });
 
 var connection3 = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "1234",
-  database: "movies2"
+  host: "127.0.0.1",
+  user: "group11",
+  password: "group11",
+  database: "mco2_imdb"
 });
 
 var connection4 = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "1234",
+  host: "127.0.0.1",
+  user: "group11",
+  password: "group11",
   database: "recovery0"
 });
 
 var connection5 = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "1234",
+  host: "127.0.0.1",
+  user: "group11",
+  password: "group11",
   database: "recovery1"
 });
 
 var connection6 = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "1234",
+  host: "127.0.0.1",
+  user: "group11",
+  password: "group11",
   database: "recovery2"
 });
 
