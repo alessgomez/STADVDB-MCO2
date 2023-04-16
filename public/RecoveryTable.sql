@@ -1,4 +1,8 @@
-CREATE TABLE `recovery0` (
+CREATE SCHEMA `recovery0`;
+
+USE recovery0;
+
+CREATE TABLE `log` (
   `log_id` int NOT NULL AUTO_INCREMENT,
   `transaction_no` int DEFAULT NULL,
   `row_no` int DEFAULT NULL,
@@ -9,7 +13,11 @@ CREATE TABLE `recovery0` (
   PRIMARY KEY (`log_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE `recovery1` (
+CREATE SCHEMA `recovery1`;
+
+USE recovery1;
+
+CREATE TABLE `log` (
   `log_id` int NOT NULL AUTO_INCREMENT,
   `transaction_no` int DEFAULT NULL,
   `row_no` int DEFAULT NULL,
@@ -20,7 +28,11 @@ CREATE TABLE `recovery1` (
   PRIMARY KEY (`log_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE `recovery2` (
+CREATE SCHEMA `recovery2`;
+
+USE recovery2;
+
+CREATE TABLE `log` (
   `log_id` int NOT NULL AUTO_INCREMENT,
   `transaction_no` int DEFAULT NULL,
   `row_no` int DEFAULT NULL,
