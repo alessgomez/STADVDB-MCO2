@@ -201,3 +201,82 @@ connection[2].query(query, data, (err, result, fields) => {
 console.log(result)
 })
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const query = `UPDATE movies SET title = ${req.body.title} WHERE id = ${req.params.id}`;
+await log[0].query(`INSERT INTO log(transaction_no, row_no, col_name, old_value, new_value, query)  VALUES (${transacNo}, ${req.params.id, "title", }, ${query})`)
+db[0].query(query)
+.then(async data => {
+    try {
+    await log[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, COMMIT)`)
+    await db[0].commit();
+
+    //propagate insert to corresponding secondary Node
+    var slaveInd;
+    if (req.body.year < 1980)
+        slaveInd = 1;
+    else 
+        slaveInd = 2;
+
+    try {
+        await log[slaveInd].query("SELECT MAX(transaction_no) FROM log", (err, result, fields) => {
+            var transacNo;
+            if (result == null)
+                transacNo = 0
+            else 
+                transacNo = result + 1
+        })
+        await log[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, START)`)      
+        await db[slaveInd].beginTransaction();
+
+        const query = `UPDATE movies SET title = ${req.body.title}, year = ${req.body.year}, rating = ${req.body.rating}, genre = ${req.body.genre}, director = ${req.body.director}, actor WHERE id = ${req.params.id}`;
+        await log[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, ${query})`)
+        db[slaveInd].query(query)
+        .then(async data => {
+            try {
+                await log[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, COMMIT)`) 
+                await db[slaveInd].commit();
+                //todo res.render
+            } catch (error) { //commit of corresponding slave node FAILED
+                console.log(error);
+                await log[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, ABORT)`)  
+            }
+        })
+        .catch(async error => {
+            await log[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, ABORT)`)  
+        })
+    } catch (error) { //corresponding slave node cannot begin transac, write to log, recover
+        await log[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, ABORT)`)  
+    }
+    }
+    catch (error) {
+    await log[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, ABORT)`)  
+    }
+})
+.catch(async error => {
+    await log[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, ABORT)`)  
+})
+
+
+} catch (error) { //node 0 cannot begin transaction, update corr slave, write log, recover
