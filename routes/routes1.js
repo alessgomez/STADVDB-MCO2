@@ -6,6 +6,9 @@ const { uptime } = require('process');
 const app = express();
 const db = [];
 const logDb = [];
+var mysql = require('mysql');
+const bluebird = require('bluebird');
+
 [db[0], db[1], db[2], logDb[0], logDb[1], logDb[2]] = require("../database")
 
 async function recover(){
@@ -934,9 +937,7 @@ app.get('/toggle', async(req, res) => {
       if (err) throw err;
       console.log("Db 1 Connected!");
     });
-    
-    
-
+    db[2].query = bluebird.promisify(db[2].query);
    res.redirect("/")
 }); 
 
