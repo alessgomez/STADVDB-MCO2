@@ -404,7 +404,7 @@ app.get('/', async (req, res) => {
       .then (async data1 => {
          await db[1].commit();
          try {
-            //db[2].destroy()
+            db[2].destroy()
             await db[2].beginTransaction();
             const query = "SELECT * FROM movies";
             db[2].query(query)
