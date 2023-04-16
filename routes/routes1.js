@@ -404,7 +404,8 @@ app.get('/', async (req, res) => {
       .then (async data1 => {
          await db[1].commit();
          try {
-            db[2].destroy()
+           
+            
             await db[2].beginTransaction();
             const query = "SELECT * FROM movies";
             db[2].query(query)
@@ -921,11 +922,20 @@ app.get('/updateMovies/:id/:year/:title', async(req, res) => {
 }); 
 
 app.get('/toggle', async(req, res) => {
-   db[1].end()
-   db[1].connect(function(err) {
+   db[2].destroy()
+   db[2]= mysql.createConnection({
+      host: "172.16.3.123",
+      user: "group11",
+      password: "group11",
+      database: "mco2_imdb"
+    });
+    
+   db[2].connect(function(err) {
       if (err) throw err;
       console.log("Db 1 Connected!");
     });
+    
+    
 
    res.redirect("/")
 }); 
