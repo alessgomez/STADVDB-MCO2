@@ -18,7 +18,7 @@ async function recover(){
       // get max transaction number
       console.log("before get max transaction no")
       const query = "SELECT MAX(transaction_no) AS maxTNo FROM log"
-      await logDb[1].query(query)
+      await logDb[2].query(query)
       .then (data1 => {
          console.log("max transaction no")
          console.log(data1)
@@ -31,7 +31,7 @@ async function recover(){
          console.log(maxTNo)
          console.log("before getting log")
          const query = "SELECT * FROM log"
-         return logDb[1].query(query)
+         return logDb[2].query(query)
       })
       .then (data2 => {
          logs = data2
@@ -105,7 +105,7 @@ async function recover(){
                         query1 = `DELETE FROM movies WHERE id = ${currLogs[k].row_no}`
                      // DELETE FROM table_name WHERE condition; 
                      console.log("query: " + query1)
-                     db[1].query(query1)
+                     db[2].query(query1)
                      console.log("after query")
     
                   } catch (error) { 
@@ -156,7 +156,7 @@ async function recover(){
                      else  
                         query2 = currLogs[k].query
                      console.log("query: " + query2)
-                     db[1].query(query2)
+                     db[2].query(query2)
                      console.log("after query")
     
                   } catch (error) { 
@@ -190,14 +190,14 @@ async function recover(){
 async function reintegrate() {
    try {
       console.log("reintegrate")
-      // get all movies from node 1
+      // get all movies from node 2
       const query = "SELECT * FROM movies FOR UPDATE"
-      await db[1].query(query)
+      await db[2].query(query)
       .then (async data => {
          //console.log(data)
          try {
-            // get all movies from node 0 that are before 1980
-            await db[0].query("SELECT * FROM movies WHERE year < 1980")
+            // get all movies from node 0 that are >= 1980
+            await db[0].query("SELECT * FROM movies WHERE year >= 1980")
             .then (async data1 => {
 
                //console.log(data1)
@@ -220,10 +220,10 @@ async function reintegrate() {
                   {
                      console.log("includes")
                      try{
-                           // update node 1 with the values from node 0
+                           // update node 2 with the values from node 0
                            const query = `UPDATE movies SET title = "${data1[i].title}" WHERE id = ${data1[i].id}`
                            console.log(query)
-                           await db[1].query(query)
+                           await db[2].query(query)
                            .then (() => {
                               console.log("updated")
                               return new Promise(function(resolve, reject) {
@@ -245,10 +245,10 @@ async function reintegrate() {
                   {
                      console.log("does not include")
                      try{
-                           // insert a new record in node 1
+                           // insert a new record in node 2
                            const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor) VALUES (${data1[i].id}, "${data1[i].title}", ${data1[i].year}, ${data1[i].rating}, '${data1[i].genre}', '${data1[i].director}', '${data1[i].actor}')`
                            console.log(query)
-                           await db[1].query(query)
+                           await db[2].query(query)
                            .then (() => {
                            console.log("inserted")
                            return new Promise(function(resolve, reject) {

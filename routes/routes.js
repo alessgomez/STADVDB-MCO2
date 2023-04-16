@@ -18,7 +18,7 @@ async function recover(){
       // get max transaction number
       console.log("before get max transaction no")
       const query = "SELECT MAX(transaction_no) AS maxTNo FROM log"
-      await logDb[0].query(query)
+      await logDb[1].query(query)
       .then (data1 => {
          console.log("max transaction no")
          console.log(data1)
@@ -31,7 +31,7 @@ async function recover(){
          console.log(maxTNo)
          console.log("before getting log")
          const query = "SELECT * FROM log"
-         return logDb[0].query(query)
+         return logDb[1].query(query)
       })
       .then (data2 => {
          logs = data2
@@ -105,7 +105,7 @@ async function recover(){
                         query1 = `DELETE FROM movies WHERE id = ${currLogs[k].row_no}`
                      // DELETE FROM table_name WHERE condition; 
                      console.log("query: " + query1)
-                     db[0].query(query1)
+                     db[1].query(query1)
                      console.log("after query")
     
                   } catch (error) { 
@@ -152,11 +152,11 @@ async function recover(){
                      // restore the old values
                      var query2 = ""
                      if (currLogs[k].new_value != null)
-                        query2 = `UPDATE movies SET ${currLogs[k].col_name} = '${currLogs[k].new_value}' WHERE id = ${currLogs[k].row_no}`;
+                        query2 = `UPDATE movies SET ${currLogs[k].col_name} = '${currLogs[k].new_value}' WHERE id = ${logs[k].row_no}`;
                      else  
                         query2 = currLogs[k].query
                      console.log("query: " + query2)
-                     db[0].query(query2)
+                     db[1].query(query2)
                      console.log("after query")
     
                   } catch (error) { 
@@ -192,87 +192,82 @@ async function reintegrate() {
       console.log("reintegrate")
       // get all movies from node 1
       const query = "SELECT * FROM movies FOR UPDATE"
-      await db[0].query(query)
+      await db[1].query(query)
       .then (async data => {
          //console.log(data)
          try {
-            // get all movies from node 1 that are before 1980
-            await db[1].query("SELECT * FROM movies")
+            // get all movies from node 0 that are before 1980
+            await db[0].query("SELECT * FROM movies WHERE year < 1980")
             .then (async data1 => {
-               await db[2].query("SELECT * FROM movies")
-               .then (async data2 => {
+
+               //console.log(data1)
+               console.log("data node1: " + data.length)
+               console.log("data node0: " + data1.length)
+               // for each movie <1980 in node 0
+               //console.log(data)
+               for (let i = 0; i < data1.length; i++) // 
+               {
+                  // if node 1 already has a record corresponding to the current movie from node 0
+                  var colId = []
                   
-                  //console.log(data1)
-                  console.log("data node1: " + data.length)
-                  console.log("data node0: " + data1.length)
-                  // for each movie <1980 in node 0
-                  //console.log(data)
-                  // data1 = all records from nodes 1 and 2
-                  data1 = data1.concat(data2)
-
-                  for (let i = 0; i < data1.length; i++) // 
+                  for (let j = 0; j < data.length; j++)
                   {
-                     // if node 0 already has a record corresponding to the current movie from node 1/2
-                     var colId = []
-                     
-                     for (let j = 0; j < data.length; j++)
-                     {
-                        colId[j] = data[j].id
-                     }
-
-                     //console.log(colId)
-                     console.log("i: " + i)
-                     if (colId.includes(data1[i].id))
-                     {
-                        console.log("includes")
-                        try{
-                              // update node 0 with the values from node 1/2
-                              const query = `UPDATE movies SET title = "${data1[i].title}" WHERE id = ${data1[i].id}`
-                              console.log(query)
-                              await db[0].query(query)
-                              .then (() => {
-                                 console.log("updated")
-                                 return new Promise(function(resolve, reject) {
-                                    resolve('start of new Promise');
-                                    });
-                                 
-                              })
-               
-                           
-
-                        }
-                        catch (error) {
-                           
-                        }
-                        
-                     }
-                     // else if node 0 does not yet have a record corresponding to the current movie from node 1/2
-                     else
-                     {
-                        console.log("does not include")
-                        try{
-                              // insert a new record in node 1
-                              const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor) VALUES (${data1[i].id}, "${data1[i].title}", ${data1[i].year}, ${data1[i].rating}, '${data1[i].genre}', '${data1[i].director}', '${data1[i].actor}')`
-                              console.log(query)
-                              await db[0].query(query)
-                              .then (() => {
-                              console.log("inserted")
+                     colId[j] = data[j].id
+                  }
+                  //console.log(colId)
+                  console.log("i: " + i)
+                  if (colId.includes(data1[i].id))
+                  {
+                     console.log("includes")
+                     try{
+                           // update node 1 with the values from node 0
+                           const query = `UPDATE movies SET title = "${data1[i].title}" WHERE id = ${data1[i].id}`
+                           console.log(query)
+                           await db[1].query(query)
+                           .then (() => {
+                              console.log("updated")
                               return new Promise(function(resolve, reject) {
                                  resolve('start of new Promise');
                                  });
                               
                            })
+            
                         
-                        }
-                        catch (error) {
-                           
-                        }
-      
 
                      }
-               
+                     catch (error) {
+                        
+                     }
+                     
                   }
-               })
+                  // else if node 1 does not yet have a record corresponding to the current movie from node 0
+                  else
+                  {
+                     console.log("does not include")
+                     try{
+                           // insert a new record in node 1
+                           const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor) VALUES (${data1[i].id}, "${data1[i].title}", ${data1[i].year}, ${data1[i].rating}, '${data1[i].genre}', '${data1[i].director}', '${data1[i].actor}')`
+                           console.log(query)
+                           await db[1].query(query)
+                           .then (() => {
+                           console.log("inserted")
+                           return new Promise(function(resolve, reject) {
+                              resolve('start of new Promise');
+                              });
+                           
+                        })
+                     
+                     }
+                     catch (error) {
+                        
+                     }
+   
+
+                  }
+            
+               }
+
+
 
             })
          }  catch (error) { 
@@ -304,14 +299,14 @@ function updateInNewMaster(id, year, oldTitle, newTitle) {
          transacNo = result[0].max + 1
    })
    .then(result => {
-      logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'START')`)
+      logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'START TRANSACTION 1')`)
    })
    .then(async result => {
       console.log("444")
       try {
          await db[slaveInd].beginTransaction();
       } catch(error) {
-         await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+         await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT 1')`)
          throw error
       }
    })
@@ -328,7 +323,7 @@ function updateInNewMaster(id, year, oldTitle, newTitle) {
       try {
          await db[slaveInd].query(query)
       } catch (error) {
-         await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+         await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT 12')`)
          throw error
       }
    })
@@ -358,14 +353,14 @@ function insertInNewMaster(req) {
          transacNo = result[0].max + 1      
    })
    .then(result => {
-      logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'START')`)
+      logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'START TRANSACTION 1')`)
    })
    .then(async result => {
       console.log("444")
       try {
          await db[slaveInd].beginTransaction();
       } catch(error) {
-         await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+         await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT 1')`)
          throw error
       }
    })
@@ -383,7 +378,7 @@ function insertInNewMaster(req) {
          await db[slaveInd].query(query)
       } catch (error) {
          console.log(error)
-         await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+         await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT 12')`)
          throw error
       }
    })
@@ -415,7 +410,6 @@ app.get('/', async (req, res) => {
             .then (async data2 => {
                await db[2].commit();
                var data = await data1.concat(data2)
-               console.log("FROM DB1 AND DB2")
                res.render("ViewSearch", data)
             })
          } catch (error) { //Node 2 cannot begin transac, load half from Node 0
@@ -426,7 +420,6 @@ app.get('/', async (req, res) => {
                db[0].query(query)
                .then (async data => {
                   await db[0].commit();
-                  console.log("FROM DB1 AND DB0")
                   res.render("ViewSearch", data)
                })
             } catch (error) { //Node 0 cannot begin transac, cannot load half of the data 
@@ -449,7 +442,6 @@ app.get('/', async (req, res) => {
                .then (async data2 => {
                   await db[0].commit();
                   var data = await data1.concat(data2)
-                  console.log("FROM DB2 AND DB0")
                   res.render("ViewSearch", data)
                })
             } catch (error) { //Node 0 cannot begin transac, cannot load half of the data 
@@ -464,7 +456,6 @@ app.get('/', async (req, res) => {
             db[0].query(query)
             .then (async data => {
                await db[0].commit();
-               console.log("FROM DB0")
                res.render("ViewSearch", data)
             })
          } catch (error) { //Node 0 cannot begin transac, cannot load any data
@@ -546,16 +537,17 @@ app.post('/insertMovie', async(req, res) => {
          transacNo = result[0].max + 1      
    })
    .then(result => {
-      logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'START')`)
+      logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'START TRANSACTION 1')`)
+      db[0].destroy();
    })
    .then(async result => {
       console.log("444")
       try {
          await db[0].beginTransaction();
       } catch(error) {
-         await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+         await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT 1')`)
          await insertInNewMaster(req);
-         res.redirect("/addMovies")
+         res.redirect('/')
          throw error
       }
    })
@@ -573,9 +565,9 @@ app.post('/insertMovie', async(req, res) => {
          await db[0].query(query)
       } catch (error) {
          console.log(error)
-         await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+         await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT 12')`)
          await insertInNewMaster(req);
-         res.redirect("/addMovies")
+         res.redirect('/')
          throw error
       }
    })
@@ -606,13 +598,13 @@ app.post('/insertMovie', async(req, res) => {
             transacNo = result[0].max + 1
       })
       .then(result => {
-         logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'START')`)
+         logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'START TRANSACTION 2')`)
       })
       .then(async result => {
          try {
             await db[slaveInd].beginTransaction();
          } catch(error) {
-            await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+            await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT 1')`)
             throw error
          }
       })
@@ -628,7 +620,7 @@ app.post('/insertMovie', async(req, res) => {
          try {
             await db[slaveInd].query(query)
          } catch(error) {
-            await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+            await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT 12')`)
             throw error
          }
       })
@@ -639,8 +631,8 @@ app.post('/insertMovie', async(req, res) => {
          db[slaveInd].commit();
       })
       .then(result => {
-         res.redirect("/addMovies")
-         
+         res.redirect("/")
+         //todo res.render
       })
    })
 }); 
@@ -660,31 +652,23 @@ app.post('/update/:id/:year/:title', async(req, res) => {
       else 
          transacNo = result[0].max + 1
    })
-   .then(async result => {
+   .then(result => {
       console.log("222")
-      try {
-         result = await db[0].query(`SELECT title FROM movies WHERE id = ${req.params.id}`)
-         return result
-      } catch (error) {
-         await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
-         await updateInNewMaster(id, year, title, req.body.title);
-         res.redirect("/")
-         throw error         
-      }
+      return db[0].query(`SELECT title FROM movies WHERE id = ${req.params.id}`) 
    })
    .then(result => {
       console.log("333")
       oldTitle = result[0].title
-      logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'START')`)
+      logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'START TRANSACTION 1')`)
    })
    .then(async result => {
       console.log("444")
       try {
          await db[0].beginTransaction();
       } catch(error) {
-         await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+         await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT 1')`)
          await updateInNewMaster(id, year, title, req.body.title);
-         res.redirect("/")
+         res.redirect('/')
          throw error
       }
    })
@@ -702,83 +686,77 @@ app.post('/update/:id/:year/:title', async(req, res) => {
       try {
          await db[0].query(query)
       } catch (error) {
-         await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+         await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT 12')`)
          await updateInNewMaster(id, year, title, req.body.title);
-         res.redirect("/")
+         res.redirect('/')
          throw error
       }
    })
    .then(result => {
       console.log("888")
       logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'COMMIT')`)
-      db[0].destroy()
+      
    })
-   .then(async result => {
+   .then(result => {
       console.log("999")
       
-      try {
-         await db[0].commit()
-      } catch(error) {
-         await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
-         await updateInNewMaster(id, year, title, req.body.title);
+      db[0].commit()
+      .then(result => { //propagate update
+         console.log("year!! + " + year)
+         if (year < 1980)
+            slaveInd = 1;
+         else 
+            slaveInd = 2;
+         return slaveInd
+      })
+      .then(slaveInd => {
+         console.log("SLAVE INDEX!!!!   " + slaveInd)
+         return logDb[slaveInd].query("SELECT MAX(transaction_no) AS max FROM log")
+      })
+      .then(result => {
+         console.log(result[0].max +" !!!!! ")
+         if (result[0].max == null)
+            transacNo = 0
+         else 
+            transacNo = result[0].max + 1
+      })
+      .then(result => {
+         logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'START TRANSACTION 2')`)
+      })
+      .then(async result => {
+         try {
+            await db[slaveInd].beginTransaction();
+         } catch(error) {
+            await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT 1')`)
+            throw error
+         }
+      })
+      .then(result => {
+         const query = `UPDATE movies SET title = '${req.body.title}' WHERE id = ${req.params.id}`;
+         return query;
+      })
+      .then(query => {
+         logDb[slaveInd].query(`INSERT INTO log(transaction_no, row_no, col_name, old_value, new_value, query) VALUES (${transacNo}, ${req.params.id}, 'title', '${oldTitle}', '${req.body.title}', "${query}")`)
+         return query;
+      })
+      .then(async query => {
+         try {
+            await db[slaveInd].query(query)
+         } catch(error) {
+            await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT 12')`)
+            throw error
+         }
+      })
+      .then(result => {
+         logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'COMMIT')`) 
+      })
+      .then(result => {
+         db[slaveInd].commit();
+      })
+      .then(result => {
          res.redirect("/")
-         throw error         
-      }
-   })
-   .then(result => { //propagate update
-      console.log("year!! + " + year)
-      if (year < 1980)
-         slaveInd = 1;
-      else 
-         slaveInd = 2;
-      return slaveInd
-   })
-   .then(slaveInd => {
-      console.log("SLAVE INDEX!!!!   " + slaveInd)
-      return logDb[slaveInd].query("SELECT MAX(transaction_no) AS max FROM log")
-   })
-   .then(result => {
-      console.log(result[0].max +" !!!!! ")
-      if (result[0].max == null)
-         transacNo = 0
-      else 
-         transacNo = result[0].max + 1
-   })
-   .then(result => {
-      logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'START')`)
-   })
-   .then(async result => {
-      try {
-         await db[slaveInd].beginTransaction();
-      } catch(error) {
-         await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
-         throw error
-      }
-   })
-   .then(result => {
-      const query = `UPDATE movies SET title = '${req.body.title}' WHERE id = ${req.params.id}`;
-      return query;
-   })
-   .then(query => {
-      logDb[slaveInd].query(`INSERT INTO log(transaction_no, row_no, col_name, old_value, new_value, query) VALUES (${transacNo}, ${req.params.id}, 'title', '${oldTitle}', '${req.body.title}', "${query}")`)
-      return query;
-   })
-   .then(async query => {
-      try {
-         await db[slaveInd].query(query)
-      } catch(error) {
-         await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
-         throw error
-      }
-   })
-   .then(result => {
-      logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'COMMIT')`) 
-   })
-   .then(result => {
-      db[slaveInd].commit();
-   })
-   .then(result => {
-      res.redirect("/")
+         //todo res.render
+      })
    })
 });
 
@@ -790,7 +768,7 @@ app.get('/generateReport', async(req, res) => {
       db[0].query(query)
       .then(async data => {
          await db[0].commit();
-         //res.redirect("/")
+         //res.render
          var isCount = false;
          var isAverage = false;
          if (req.query.agg == "COUNT")
@@ -830,26 +808,6 @@ app.get('/generateReport', async(req, res) => {
                .then(async data2 => {
                   await db[2].commit();
                   data = data1.concat(data2)
-                  var isCount = false;
-                  var isAverage = false;
-                  if (req.query.agg == "COUNT")
-                     isCount = true
-                  else
-                     isAverage = true
-                  const results = {
-                     data: data,
-                     agg: req.query.agg,
-                     isCount: isCount,
-                     isAverage: isAverage
-                  }
-                  res.render('partials\\reportRows', results, function(err, html) {
-                     if (err)
-                     {
-                         throw err;
-                     } 
-                     //console.log("HTML: " + html);
-                     res.send(html);
-                 });
                   //res.render
                })
                
@@ -865,26 +823,6 @@ app.get('/generateReport', async(req, res) => {
             db[2].query(query)
             .then(async data => {
                await db[2].commit();
-               var isCount = false;
-               var isAverage = false;
-               if (req.query.agg == "COUNT")
-                  isCount = true
-               else
-                  isAverage = true
-               const results = {
-                  data: data,
-                  agg: req.query.agg,
-                  isCount: isCount,
-                  isAverage: isAverage
-               }
-               res.render('partials\\reportRows', results, function(err, html) {
-                  if (err)
-                  {
-                      throw err;
-                  } 
-                  //console.log("HTML: " + html);
-                  res.send(html);
-              });
                //res.render
             })
          } catch (error) { //node 2 cannot begin transac
@@ -893,6 +831,19 @@ app.get('/generateReport', async(req, res) => {
       }
 
    }
+   /*
+   SELECT YEAR, ${req.query.agg}(${req.query.param}) AS ${req.query.agg} FROM movies GROUP BY YEAR
+   */ 
+
+
+
+
+   /*
+   const attributeName = req.query.attributeName
+   const agg = req.query.agg
+   console.log(attributeName)
+   console.log(agg)
+   */
 }); 
 
 
@@ -922,16 +873,6 @@ app.get('/updateMovies/:id/:year/:title', async(req, res) => {
       title: req.params.title
    }
    res.render("UpdateMovies", data)
-}); 
-
-app.get('/toggle', async(req, res) => {
-   db[1].end()
-   db[1].connect(function(err) {
-      if (err) throw err;
-      console.log("Db 1 Connected!");
-    });
-
-   res.redirect("/")
 }); 
 
 module.exports = app;
