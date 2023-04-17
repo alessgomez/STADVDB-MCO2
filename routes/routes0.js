@@ -1002,7 +1002,7 @@ function insertInNewMaster(req, lastUpdated) {
 
 app.get('/', async (req, res) => {
    try { 
-      await setUpMySQL()
+      //await setUpMySQL()
       await recoverAll()
       await clearAllLogs()
       await reintegrateAll()
@@ -1035,7 +1035,7 @@ app.get('/', async (req, res) => {
                   res.render("ViewSearch", data)
                })
             } catch (error) { //Node 0 cannot begin transac, cannot load half of the data 
-               console.log(error)
+               console.log("FROM DB1")
                res.render("ViewSearch", data1)
             }
          })
