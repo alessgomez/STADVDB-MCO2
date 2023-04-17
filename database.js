@@ -1,6 +1,6 @@
 var mysql = require('mysql');
 const bluebird = require('bluebird');
-
+/*
 var connection1 = mysql.createConnection({
   host: "localhost",
   user: "root",
@@ -42,9 +42,10 @@ var connection6 = mysql.createConnection({
   password: "1234",
   database: "recovery2"
 });
+*/
 
-/**
- * var connection1 = mysql.createConnection({
+
+  var connection1 = mysql.createConnection({
   host: "172.16.3.121",
   user: "group11",
   password: "group11",
@@ -85,7 +86,7 @@ var connection6 = mysql.createConnection({
   password: "group11",
   database: "recovery2"
 });
- */
+ 
 
 connection1.connect(function(err) {
   if (err) throw err;
