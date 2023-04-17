@@ -67,8 +67,7 @@ async function recover0(){
             console.log("log for transaction no " + currTransactionNo + ": ")
             var currLogs = []
             var k = 0
-            console.log("data2:")
-            console.log(data2)
+            
             // store logs with current transaction No j
             for (let i = 0; i < data2.length; i++)
             {
@@ -78,7 +77,7 @@ async function recover0(){
                   k += 1
                }
             }
-            
+            console.log("CURRLOGS DEBUG: " + currLogs[currLogs.length-1])
             // if transaction no. has commit, push to redo
             if (currLogs[currLogs.length-1].query == "COMMIT")
                redo.push(currTransactionNo)
@@ -640,7 +639,7 @@ async function reintegrate0and1() {
                            }
 
                            
-                           await db[0].query(`UPDATE movies SET title = "${data0[i].title}", lastUpdated = "${data0[i].lastUpdated}" WHERE id = ${data0[i].id}`)
+                           await db[indNodeToBeUpdated].query(query)
                            .then (() => {
                               console.log("updated node " + indNodeToBeUpdated)
                               return new Promise(function(resolve, reject) {
