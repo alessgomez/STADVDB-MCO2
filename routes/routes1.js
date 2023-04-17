@@ -1439,58 +1439,49 @@ app.post('/update/:id/:year/:title', async(req, res) => {
 });
 
 app.get('/generateReport', async(req, res) => {
+   var isCount = false;
+   var isAverage = false;
+   if (req.query.agg == "COUNT")
+   isCount = true
+   else
+   isAverage = true
+
    try {
-      db[0].beginTransaction();
+      await db[0].beginTransaction();
       const query = `SELECT YEAR, ${req.query.agg}(${req.query.param}) AS VAL FROM movies GROUP BY YEAR`
       db[0].query(query)
       .then(async data => {
          await db[0].commit();
-         //res.redirect("/")
-         var isCount = false;
-         var isAverage = false;
-         if (req.query.agg == "COUNT")
-            isCount = true
-         else
-            isAverage = true
+
          const results = {
             data: data,
             agg: req.query.agg,
             isCount: isCount,
             isAverage: isAverage
          }
-         console.log(data)
-         console.log("iscount: "  +isCount)
-         console.log("isAverage: " + isAverage)
          res.render('partials/reportRows', results, function(err, html) {
             if (err)
             {
                 throw err;
             } 
-            //console.log("HTML: " + html);
             res.send(html);
         });
       })
-   } catch(error) { //Node
-      console.log(error)
+   } catch(error) { //Node 0 failed, load from node 1 and node 2
       try {
-         db[1].beginTransaction();
+         await db[1].beginTransaction();
          const query = `SELECT YEAR, ${req.query.agg}(${req.query.param}) AS ${req.query.agg} FROM movies GROUP BY YEAR`
          db[1].query(query)
          .then(async data1 => {
             await db[1].commit();
             try {
-               db[2].beginTransaction();
+               await db[2].beginTransaction();
                const query = `SELECT YEAR, ${req.query.agg}(${req.query.param}) AS ${req.query.agg} FROM movies GROUP BY YEAR`
                db[2].query(query)
                .then(async data2 => {
                   await db[2].commit();
-                  data = data1.concat(data2)
-                  var isCount = false;
-                  var isAverage = false;
-                  if (req.query.agg == "COUNT")
-                     isCount = true
-                  else
-                     isAverage = true
+                  var data = await data1.concat(data2)
+
                   const results = {
                      data: data,
                      agg: req.query.agg,
@@ -1502,30 +1493,35 @@ app.get('/generateReport', async(req, res) => {
                      {
                          throw err;
                      } 
-                     //console.log("HTML: " + html);
                      res.send(html);
                  });
-                  //res.render
                })
-               
-            } catch (error) { //node 2 cannot begin transac
-               console.log(error)
+            } catch (error) { //node 2 cannot begin transac, display node 1 only
+
+               const results = {
+                  data: data1,
+                  agg: req.query.agg,
+                  isCount: isCount,
+                  isAverage: isAverage
+               }
+               res.render('partials/reportRows', results, function(err, html) {
+                  if (err)
+                  {
+                      throw err;
+                  } 
+                  res.send(html);
+              });
             }
          })
       } catch (error) { //Node 1 cannot begin transac, load node 2 only
          console.log(error)
          try {
-            db[2].beginTransaction();
+            await db[2].beginTransaction();
             const query = `SELECT YEAR, ${req.query.agg}(${req.query.param}) AS ${req.query.agg} FROM movies GROUP BY YEAR`
             db[2].query(query)
             .then(async data => {
                await db[2].commit();
-               var isCount = false;
-               var isAverage = false;
-               if (req.query.agg == "COUNT")
-                  isCount = true
-               else
-                  isAverage = true
+
                const results = {
                   data: data,
                   agg: req.query.agg,
@@ -1537,16 +1533,28 @@ app.get('/generateReport', async(req, res) => {
                   {
                       throw err;
                   } 
-                  //console.log("HTML: " + html);
                   res.send(html);
               });
                //res.render
             })
          } catch (error) { //node 2 cannot begin transac
-            console.log(error)
+
+            var data = [];
+            const results = {
+               data: data,
+               agg: req.query.agg,
+               isCount: isCount,
+               isAverage: isAverage
+            }
+            res.render('partials/reportRows', results, function(err, html) {
+               if (err)
+               {
+                   throw err;
+               } 
+               res.send(html);
+           });
          }  
       }
-
    }
 }); 
 
