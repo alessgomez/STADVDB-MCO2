@@ -8,7 +8,352 @@ const db = [];
 const logDb = [];
 [db[0], db[1], db[2], logDb[0], logDb[1], logDb[2]] = require("../database")
 
-async function recover(){
+async function recover0(){
+   undo = []   
+   redo = []
+   maxTNo = 0
+   logs = []
+
+   try {
+      // get max transaction number
+      console.log("before get max transaction no")
+      const query = "SELECT MAX(transaction_no) AS maxTNo FROM log"
+      await logDb[0].query(query)
+      .then (data1 => {
+         console.log("max transaction no")
+         console.log(data1)
+         console.log(data1[0].maxTNo)
+         maxTNo = data1[0].maxTNo
+      })
+      .then (result => {
+         console.log("hey there")
+         // loop for each transaction no (Ti)
+         console.log(maxTNo)
+         console.log("before getting log")
+         const query = "SELECT * FROM log"
+         return logDb[0].query(query)
+      })
+      .then (data2 => {
+         logs = data2
+         for (let j = 0; j <= maxTNo; j++)
+         { 
+            currTransactionNo = j
+            console.log("log for transaction no " + currTransactionNo + ": ")
+            var currLogs = []
+            var k = 0
+            console.log("data2:")
+            console.log(data2)
+            // store logs with current transaction No j
+            for (let i = 0; i < data2.length; i++)
+            {
+               if (data2[i].transaction_no == currTransactionNo)
+               {
+                  currLogs[k] = data2[i]
+                  k += 1
+               }
+            }
+            
+            // if transaction no. has commit, push to redo
+            if (currLogs[currLogs.length-1].query == "COMMIT")
+               redo.push(currTransactionNo)
+            // else push to undo if last log is not abort
+            else if (currLogs[currLogs.length-1].query != "ABORT")
+               undo.push(currTransactionNo)
+                 
+         }
+         
+       
+      })  
+      .then (results => { 
+         console.log("undo")
+         undo = undo.reverse()
+         console.log("undo: " + undo)
+         console.log("redo: " + redo)
+         for (let i = 0; i < undo.length; i++)
+         {
+            console.log(undo[i])
+            
+            try {
+               // select all logs with current transaction no.
+               const query = "SELECT * FROM log WHERE transaction_no = " + undo[i]
+               console.log(query)
+               //console.log(logs)
+               currTransactionNo = undo[i]
+               console.log("log for transaction no " + currTransactionNo + ": ")
+               var currLogs = []
+               var k = 0
+               // store logs with current transaction No 
+               for (let j = 0; j < logs.length; j++)
+               {
+                  if (logs[j].transaction_no == currTransactionNo)
+                  {
+                     currLogs[k] = logs[j]
+                     k += 1
+                  }
+               }
+               // curr logs - stores current logs of all transactions
+               // starting from the last log up until the log right after start
+               for (let k = currLogs.length-1; k > 0; k--)
+               {
+                  console.log("currLog: " + currLogs[k])
+                  try {
+                     // restore the old values
+                     var query1 = ""
+                     if (currLogs[k].old_value != null)
+                        query1 = `UPDATE movies SET ${currLogs[k].col_name} = '${currLogs[k].old_value}' WHERE id = ${logs[k].row_no}`;
+                     else
+                        query1 = `DELETE FROM movies WHERE id = ${currLogs[k].row_no}`
+                     // DELETE FROM table_name WHERE condition; 
+                     console.log("query: " + query1)
+                     db[0].query(query1)
+                     console.log("after query")
+    
+                  } catch (error) { 
+                    console.log(error)
+                  }
+               }
+               
+
+               
+            } catch (error) { 
+               console.log(error)
+            }  
+         }
+      })
+      .then (results => { 
+         console.log("redo")
+         for (let i = 0; i < redo.length; i++)
+         {
+            try {
+               const query = "SELECT * FROM log WHERE transaction_no = " + redo[i]
+               console.log(query)
+               // get all logs with curerent transaction no
+               currTransactionNo = redo[i]
+               console.log("log for transaction no " + currTransactionNo + ": ")
+               var currLogs = []
+               var k = 0
+               // store logs with current transaction No 
+               for (let j = 0; j < logs.length; j++)
+               {
+                  if (logs[j].transaction_no == currTransactionNo)
+                  {
+                     currLogs[k] = logs[j]
+                     k += 1
+                  }
+               }
+
+               console.log("redo currLogs.legnth = " + currLogs.length)
+               // starting from log right after start up until the most recent log before the commit
+               for (let k = 1; k < currLogs.length-1; k++)
+               {
+                  console.log("k: " + k);
+                  console.log("currLog: " + currLogs[k])
+                  try {
+                     // restore the old values
+                     var query2 = ""
+                     if (currLogs[k].new_value != null)
+                        query2 = `UPDATE movies SET ${currLogs[k].col_name} = '${currLogs[k].new_value}' WHERE id = ${currLogs[k].row_no}`;
+                     else  
+                        query2 = currLogs[k].query
+                     console.log("query: " + query2)
+                     db[0].query(query2)
+                     console.log("after query")
+    
+                  } catch (error) { 
+                    console.log(error)
+                  }
+               }
+          
+            } catch (error) { 
+               console.log(error)
+            }  
+         }
+      })
+   } catch (error) { 
+      console.log(error)
+   }
+ 
+}
+
+async function recover1(){
+   undo = []   
+   redo = []
+   maxTNo = 0
+   logs = []
+
+   try {
+      // get max transaction number
+      console.log("before get max transaction no")
+      const query = "SELECT MAX(transaction_no) AS maxTNo FROM log"
+      await logDb[1].query(query)
+      .then (data1 => {
+         console.log("max transaction no")
+         console.log(data1)
+         console.log(data1[0].maxTNo)
+         maxTNo = data1[0].maxTNo
+      })
+      .then (result => {
+         console.log("hey there")
+         // loop for each transaction no (Ti)
+         console.log(maxTNo)
+         console.log("before getting log")
+         const query = "SELECT * FROM log"
+         return logDb[1].query(query)
+      })
+      .then (data2 => {
+         logs = data2
+         for (let j = 0; j <= maxTNo; j++)
+         { 
+            currTransactionNo = j
+            console.log("log for transaction no " + currTransactionNo + ": ")
+            var currLogs = []
+            var k = 0
+            console.log("data2:")
+            console.log(data2)
+            // store logs with current transaction No j
+            for (let i = 0; i < data2.length; i++)
+            {
+               if (data2[i].transaction_no == currTransactionNo)
+               {
+                  currLogs[k] = data2[i]
+                  k += 1
+               }
+            }
+            
+            // if transaction no. has commit, push to redo
+            if (currLogs[currLogs.length-1].query == "COMMIT")
+               redo.push(currTransactionNo)
+            // else push to undo if last log is not abort
+            else if (currLogs[currLogs.length-1].query != "ABORT")
+               undo.push(currTransactionNo)
+                 
+         }
+         
+       
+      })  
+      .then (results => { 
+         console.log("undo")
+         undo = undo.reverse()
+         console.log("undo: " + undo)
+         console.log("redo: " + redo)
+         for (let i = 0; i < undo.length; i++)
+         {
+            console.log(undo[i])
+            
+            try {
+               // select all logs with current transaction no.
+               const query = "SELECT * FROM log WHERE transaction_no = " + undo[i]
+               console.log(query)
+               //console.log(logs)
+               currTransactionNo = undo[i]
+               console.log("log for transaction no " + currTransactionNo + ": ")
+               var currLogs = []
+               var k = 0
+               // store logs with current transaction No 
+               for (let j = 0; j < logs.length; j++)
+               {
+                  if (logs[j].transaction_no == currTransactionNo)
+                  {
+                     currLogs[k] = logs[j]
+                     k += 1
+                  }
+               }
+               // curr logs - stores current logs of all transactions
+               // starting from the last log up until the log right after start
+               for (let k = currLogs.length-1; k > 0; k--)
+               {
+                  console.log("currLog: " + currLogs[k])
+                  try {
+                     // restore the old values
+                     var query1 = ""
+                     if (currLogs[k].old_value != null)
+                        query1 = `UPDATE movies SET ${currLogs[k].col_name} = '${currLogs[k].old_value}' WHERE id = ${logs[k].row_no}`;
+                     else
+                        query1 = `DELETE FROM movies WHERE id = ${currLogs[k].row_no}`
+                     // DELETE FROM table_name WHERE condition; 
+                     console.log("query: " + query1)
+                     db[1].query(query1)
+                     console.log("after query")
+    
+                  } catch (error) { 
+                    console.log(error)
+                  }
+               }
+               
+
+               
+            } catch (error) { 
+               console.log(error)
+            }  
+         }
+      })
+      .then (results => { 
+         console.log("redo")
+         for (let i = 0; i < redo.length; i++)
+         {
+            try {
+               const query = "SELECT * FROM log WHERE transaction_no = " + redo[i]
+               console.log(query)
+               // get all logs with curerent transaction no
+               currTransactionNo = redo[i]
+               console.log("log for transaction no " + currTransactionNo + ": ")
+               var currLogs = []
+               var k = 0
+               // store logs with current transaction No 
+               for (let j = 0; j < logs.length; j++)
+               {
+                  if (logs[j].transaction_no == currTransactionNo)
+                  {
+                     currLogs[k] = logs[j]
+                     k += 1
+                  }
+               }
+
+               console.log("redo currLogs.legnth = " + currLogs.length)
+               // starting from log right after start up until the most recent log before the commit
+               for (let k = 1; k < currLogs.length-1; k++)
+               {
+                  console.log("k: " + k);
+                  console.log("currLog: " + currLogs[k])
+                  try {
+                     // restore the old values
+                     var query2 = ""
+                     if (currLogs[k].new_value != null)
+                        query2 = `UPDATE movies SET ${currLogs[k].col_name} = '${currLogs[k].new_value}' WHERE id = ${currLogs[k].row_no}`;
+                     else  
+                        query2 = currLogs[k].query
+                     console.log("query: " + query2)
+                     db[1].query(query2)
+                     console.log("after query")
+    
+                  } catch (error) { 
+                    console.log(error)
+                  }
+               }
+          
+            } catch (error) { 
+               console.log(error)
+            }  
+         }
+      })
+   } catch (error) { 
+      console.log(error)
+   }
+ 
+   // for all transaction numbers in undo
+  
+   /*
+   console.log("undo: ")
+   console.log(undo)
+   console.log("redo: ")
+   console.log(redo)
+
+   // for each transaction number  in redo
+  
+   */
+}
+
+async function recover2() {
    undo = []   
    redo = []
    maxTNo = 0
@@ -172,60 +517,84 @@ async function recover(){
    } catch (error) { 
       console.log(error)
    }
- 
-   // for all transaction numbers in undo
-  
-   /*
-   console.log("undo: ")
-   console.log(undo)
-   console.log("redo: ")
-   console.log(redo)
-
-   // for each transaction number  in redo
-  
-   */
 }
 
+async function recoverAll() {
+   await recover0();
+   await recover1();
+   await recover2();
+}
 
-async function reintegrate() {
+async function reintegrateAll() {
+   await reintegrate0and1();
+   await reintegrate0and2();
+}
+
+async function reintegrate0and1() {
    try {
       console.log("reintegrate")
-      // get all movies from node 2
+      // get all movies from node 1
       const query = "SELECT * FROM movies FOR UPDATE"
-      await db[2].query(query)
-      .then (async data => {
+      await db[1].query(query)
+      .then (async data1 => {
          //console.log(data)
          try {
-            // get all movies from node 0 that are >= 1980
-            await db[0].query("SELECT * FROM movies WHERE year >= 1980")
-            .then (async data1 => {
+            // get all movies from node 0 that are before 1980
+            await db[0].query("SELECT * FROM movies WHERE year < 1980")
+            .then (async data0 => {
 
                //console.log(data1)
-               console.log("data node1: " + data.length)
-               console.log("data node0: " + data1.length)
+               console.log("data node1: " + data1.length)
+               console.log("data node0: " + data0.length)
                // for each movie <1980 in node 0
                //console.log(data)
-               for (let i = 0; i < data1.length; i++) // 
+               for (let i = 0; i < data0.length; i++) // 
                {
-                  // if node 1 already has a record corresponding to the current movie from node 0
-                  var colId = []
                   
-                  for (let j = 0; j < data.length; j++)
+                  var colId1 = []
+                  
+                  // colId1 = all column ids of node 1
+                  for (let j = 0; j < data1.length; j++)
                   {
-                     colId[j] = data[j].id
+                     colId1[j] = data1[j].id
                   }
+                
                   //console.log(colId)
                   console.log("i: " + i)
-                  if (colId.includes(data1[i].id))
+                  // if node 1 already has a record corresponding to the current movie from node 0
+                  if (colId1.includes(data0[i].id))
                   {
                      console.log("includes")
                      try{
-                           // update node 2 with the values from node 0
-                           const query = `UPDATE movies SET title = "${data1[i].title}" WHERE id = ${data1[i].id}`
+                           // update node 1 with the values from node 0
+                           // find in data1 the record that matches with data0[i]
+                           
+                           var found = false
+                           var recordInd = 0
+                           while(!found)
+                           {
+                              if (data1[recordInd].id == data0[i].id)
+                                 found = true
+                              else
+                                 recordInd++
+                           }
+
+
+                           var timeStampNode0 = new Date(data0[i].lastUpdated).getTime();
+                           var timeStampNode1 = new Date(data1[recordInd].lastUpdated).getTime();
+                           
+                           var indNodeToBeUpdated = 1
+                           var query = `UPDATE movies SET title = "${data0[i].title}" WHERE id = ${data0[i].id}`
+                           
+                           if (timeStampNode1 > timeStampNode0) {
+                              indNodeToBeUpdated = 0
+                              var query = `UPDATE movies SET title = "${data1[recordInd].title}" WHERE id = ${data1[recordInd].id}`
+                           }
+
                            console.log(query)
-                           await db[2].query(query)
+                           await db[indNodeToBeUpdated].query(query)
                            .then (() => {
-                              console.log("updated")
+                              console.log("updated node " + indNodeToBeUpdated)
                               return new Promise(function(resolve, reject) {
                                  resolve('start of new Promise');
                                  });
@@ -245,12 +614,12 @@ async function reintegrate() {
                   {
                      console.log("does not include")
                      try{
-                           // insert a new record in node 2
-                           const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor) VALUES (${data1[i].id}, "${data1[i].title}", ${data1[i].year}, ${data1[i].rating}, '${data1[i].genre}', '${data1[i].director}', '${data1[i].actor}')`
+                           // insert a new record in node 1
+                           const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor) VALUES (${data0[i].id}, "${data0[i].title}", ${data0[i].year}, ${data0[i].rating}, '${data0[i].genre}', '${data0[i].director}', '${data0[i].actor}')`
                            console.log(query)
-                           await db[2].query(query)
+                           await db[1].query(query)
                            .then (() => {
-                           console.log("inserted")
+                           console.log("inserted to node 1")
                            return new Promise(function(resolve, reject) {
                               resolve('start of new Promise');
                               });
@@ -267,6 +636,39 @@ async function reintegrate() {
             
                }
 
+               // insert records from node1 that are not yet in node 0
+               for (let i = 0; i < data1.length; i++) 
+               {
+                    // colId0 = all column ids of node 0
+                    var colId0 = []
+                    for (let j = 0; j < data0.length; j++)
+                    {
+                       colId0[j] = data0[j].id
+                    }
+
+                    if (!colId0.includes(data1[i].id))
+                    {
+                        console.log("does not include")
+                        try{
+                              // insert a new record in node 0
+                              const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor) VALUES (${data1[i].id}, "${data1[i].title}", ${data1[i].year}, ${data1[i].rating}, '${data1[i].genre}', '${data1[i].director}', '${data1[i].actor}')`
+                              console.log(query)
+                              await db[0].query(query)
+                              .then (() => {
+                              console.log("inserted to node 0")
+                              return new Promise(function(resolve, reject) {
+                                 resolve('start of new Promise');
+                                 });
+                              
+                           })
+                        
+                        }
+                        catch (error) {
+                           
+                        }
+                    }
+               }
+
 
 
             })
@@ -277,8 +679,157 @@ async function reintegrate() {
    } catch (error) {
 
    }
- 
+}
+
+async function reintegrate0and2() {
+   try {
+      console.log("reintegrate")
+      // get all movies from node 2
+      const query = "SELECT * FROM movies FOR UPDATE"
+      await db[2].query(query)
+      .then (async data2 => {
+         //console.log(data)
+         try {
+            // get all movies from node 0 that are >= 1980
+            await db[0].query("SELECT * FROM movies WHERE year >= 1980")
+            .then (async data0 => {
+
+               //console.log(data2)
+               console.log("data node2: " + data2.length)
+               console.log("data node0: " + data0.length)
+               // for each movie >= 1980 in node 0
+               //console.log(data)
+               for (let i = 0; i < data0.length; i++) // 
+               {
+                  
+                  var colId2 = []
+                  
+                  // colId2 = all column ids of node 2
+                  for (let j = 0; j < data2.length; j++)
+                  {
+                     colId2[j] = data2[j].id
+                  }
+                
+                  //console.log(colId)
+                  console.log("i: " + i)
+                  // if node 2 already has a record corresponding to the current movie from node 0
+                  if (colId2.includes(data0[i].id))
+                  {
+                     console.log("includes")
+                     try{
+                           // update node 2 with the values from node 0
+                           // find in data2 the record that matches with data0[i]
+                           
+                           var found = false
+                           var recordInd = 0
+                           while(!found)
+                           {
+                              if (data2[recordInd].id == data0[i].id)
+                                 found = true
+                              else
+                                 recordInd++
+                           }
+
+
+                           var timeStampNode0 = new Date(data0[i].lastUpdated).getTime();
+                           var timeStampNode2 = new Date(data2[recordInd].lastUpdated).getTime();
+                           
+                           var indNodeToBeUpdated = 2
+                           var query = `UPDATE movies SET title = "${data0[i].title}" WHERE id = ${data0[i].id}`
+                           
+                           if (timeStampNode2 > timeStampNode0) {
+                              indNodeToBeUpdated = 0
+                              var query = `UPDATE movies SET title = "${data2[recordInd].title}" WHERE id = ${data2[recordInd].id}`
+                           }
+
+                           console.log(query)
+                           await db[indNodeToBeUpdated].query(query)
+                           .then (() => {
+                              console.log("updated node " + indNodeToBeUpdated)
+                              return new Promise(function(resolve, reject) {
+                                 resolve('start of new Promise');
+                                 });
+                              
+                           })
+            
+                        
+
+                     }
+                     catch (error) {
+                        
+                     }
+                     
+                  }
+                  // else if node 2 does not yet have a record corresponding to the current movie from node 0
+                  else
+                  {
+                     console.log("does not include")
+                     try{
+                           // insert a new record in node 2
+                           const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor) VALUES (${data0[i].id}, "${data0[i].title}", ${data0[i].year}, ${data0[i].rating}, '${data0[i].genre}', '${data0[i].director}', '${data0[i].actor}')`
+                           console.log(query)
+                           await db[2].query(query)
+                           .then (() => {
+                           console.log("inserted to node 2")
+                           return new Promise(function(resolve, reject) {
+                              resolve('start of new Promise');
+                              });
+                           
+                        })
+                     
+                     }
+                     catch (error) {
+                        
+                     }
    
+
+                  }
+            
+               }
+
+               // insert records from node 2 that are not yet in node 0
+               for (let i = 0; i < data2.length; i++) 
+               {
+                    // colId0 = all column ids of node 0
+                    var colId0 = []
+                    for (let j = 0; j < data0.length; j++)
+                    {
+                       colId0[j] = data0[j].id
+                    }
+
+                    if (!colId0.includes(data2[i].id))
+                    {
+                        console.log("does not include")
+                        try{
+                              // insert a new record in node 0
+                              const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor) VALUES (${data2[i].id}, "${data2[i].title}", ${data2[i].year}, ${data2[i].rating}, '${data2[i].genre}', '${data2[i].director}', '${data2[i].actor}')`
+                              console.log(query)
+                              await db[0].query(query)
+                              .then (() => {
+                              console.log("inserted to node 0")
+                              return new Promise(function(resolve, reject) {
+                                 resolve('start of new Promise');
+                                 });
+                              
+                           })
+                        
+                        }
+                        catch (error) {
+                           
+                        }
+                    }
+               }
+
+
+
+            })
+         }  catch (error) { 
+
+         }
+      })
+   } catch (error) {
+
+   }
 }
 
 function updateInNewMaster(id, year, oldTitle, newTitle) {
@@ -394,8 +945,8 @@ function insertInNewMaster(req) {
 
 app.get('/', async (req, res) => {
    try { 
-      await recover()
-      await reintegrate()
+      await recoverAll()
+      await reintegrateAll()
       .then (async res => {
          await db[1].beginTransaction();
          const query = "SELECT * FROM movies";
