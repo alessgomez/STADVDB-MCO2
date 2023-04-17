@@ -45,21 +45,21 @@ async function recover0(){
       console.log("before get max transaction no")
       const query = "SELECT MAX(transaction_no) AS maxTNo FROM log"
       await logDb[0].query(query)
-      .then (data1 => {
+      .then (async data1 => {
          console.log("max transaction no")
          console.log(data1)
          console.log(data1[0].maxTNo)
          maxTNo = data1[0].maxTNo
       })
-      .then (result => {
+      .then (async result => {
          console.log("hey there")
          // loop for each transaction no (Ti)
          console.log(maxTNo)
          console.log("before getting log")
          const query = "SELECT * FROM log"
-         return logDb[0].query(query)
+         return alogDb[0].query(query)
       })
-      .then (data2 => {
+      .then (async data2 => {
          console.log("all node 0 logs:")
          console.log(data2)
          logs = data2
@@ -98,7 +98,7 @@ async function recover0(){
          
        
       })  
-      .then (results => { 
+      .then (async results => { 
          console.log("undo")
          undo = undo.reverse()
          console.log("undo: " + undo)
@@ -139,7 +139,7 @@ async function recover0(){
                         query1 = `DELETE FROM movies WHERE id = ${currLogs[k].row_no}`
                      // DELETE FROM table_name WHERE condition; 
                      console.log("query: " + query1)
-                     db[0].query(query1)
+                     await db[0].query(query1)
                      console.log("after query")
     
                   } catch (error) { 
@@ -154,51 +154,56 @@ async function recover0(){
             }  
          }
       })
-      .then (results => { 
+      .then (async results => { 
          console.log("redo")
-         for (let i = 0; i < redo.length; i++)
-         {
-            try {
-               const query = "SELECT * FROM log WHERE transaction_no = " + redo[i]
-
-               // get all logs with curerent transaction no
-               currTransactionNo = redo[i]
-               console.log("log for transaction no " + currTransactionNo + ": ")
-               var currLogs = []
-               var k = 0
-               // store logs with current transaction No 
-               for (let j = 0; j < logs.length; j++)
-               {
-                  if (logs[j].transaction_no == currTransactionNo)
+         try {
+            for (let i = 0; i < redo.length; i++)
+            {
+               try {
+                  const query = "SELECT * FROM log WHERE transaction_no = " + redo[i]
+   
+                  // get all logs with curerent transaction no
+                  currTransactionNo = redo[i]
+                  console.log("log for transaction no " + currTransactionNo + ": ")
+                  var currLogs = []
+                  var k = 0
+                  // store logs with current transaction No 
+                  for (let j = 0; j < logs.length; j++)
                   {
-                     currLogs[k] = logs[j]
-                     k += 1
+                     if (logs[j].transaction_no == currTransactionNo)
+                     {
+                        currLogs[k] = logs[j]
+                        k += 1
+                     }
                   }
-               }
-
-               console.log("redo currLogs.legnth = " + currLogs.length)
-               // starting from log right after start up until the most recent log before the commit
-               for (let k = 1; k < currLogs.length-1; k++)
-               {
-                  console.log("k: " + k);
-                  console.log("currLog: " + currLogs[k])
-                  try {
-                     // restore the old values
-                     const query2 = currLogs[k].query
-                     console.log("query: " + query2)
-                     db[0].query(query2)
-                     console.log("after query")
-    
-                  } catch (error) { 
-                    console.log(error)
+   
+                  console.log("redo currLogs.legnth = " + currLogs.length)
+                  // starting from log right after start up until the most recent log before the commit
+                  for (let k = 1; k < currLogs.length-1; k++)
+                  {
+                     console.log("k: " + k);
+                     console.log("currLog: " + currLogs[k])
+                     try {
+                        // restore the old values
+                        const query2 = currLogs[k].query
+                        console.log("query: " + query2)
+                        await db[0].query(query2)
+                        console.log("after query")
+       
+                     } catch (error) { 
+                       console.log(error)
+                     }
                   }
-               }
-          
-            } catch (error) { 
-               console.log(error)
-            }  
+             
+               } catch (error) { 
+                  console.log(error)
+               }  
+            }
+            clearLog0()
+         } catch (error) {
+            console.log("error caught")
          }
-         clearLog0()
+        
       })
    } catch (error) { 
       console.log(error)
