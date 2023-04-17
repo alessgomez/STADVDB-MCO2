@@ -1448,7 +1448,7 @@ app.get('/generateReport', async(req, res) => {
 
    try {
       await db[0].beginTransaction();
-      const query = `SELECT YEAR, ${req.query.agg}(${req.query.param}) AS VAL FROM movies GROUP BY YEAR`
+      const query = `SELECT YEAR, ${req.query.agg}(${req.query.param}) AS VAL FROM movies GROUP BY YEAR ORDER BY YEAR`
       db[0].query(query)
       .then(async data => {
          await db[0].commit();
@@ -1470,13 +1470,13 @@ app.get('/generateReport', async(req, res) => {
    } catch(error) { //Node 0 failed, load from node 1 and node 2
       try {
          await db[1].beginTransaction();
-         const query = `SELECT YEAR, ${req.query.agg}(${req.query.param}) AS VAL FROM movies GROUP BY YEAR`
+         const query = `SELECT YEAR, ${req.query.agg}(${req.query.param}) AS VAL FROM movies GROUP BY YEAR ORDER BY YEAR`
          db[1].query(query)
          .then(async data1 => {
             await db[1].commit();
             try {
                await db[2].beginTransaction();
-               const query = `SELECT YEAR, ${req.query.agg}(${req.query.param}) AS VAL FROM movies GROUP BY YEAR`
+               const query = `SELECT YEAR, ${req.query.agg}(${req.query.param}) AS VAL FROM movies GROUP BY YEAR ORDER BY YEAR`
                db[2].query(query)
                .then(async data2 => {
                   await db[2].commit();
@@ -1517,7 +1517,7 @@ app.get('/generateReport', async(req, res) => {
          console.log(error)
          try {
             await db[2].beginTransaction();
-            const query = `SELECT YEAR, ${req.query.agg}(${req.query.param}) AS VAL FROM movies GROUP BY YEAR`
+            const query = `SELECT YEAR, ${req.query.agg}(${req.query.param}) AS VAL FROM movies GROUP BY YEAR ORDER BY YEAR`
             db[2].query(query)
             .then(async data => {
                await db[2].commit();
