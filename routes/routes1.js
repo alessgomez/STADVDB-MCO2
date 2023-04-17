@@ -16,7 +16,7 @@ var ctr2 = 0;
 
 async function setUpMySQL() {
    var query1 = "SET PERSIST innodb_lock_wait_timeout = 10"
-   var query2 = "SET GLOBAL TRANSACTION ISOLATION LEVEL REPEATABLE READ"
+   var query2 = "SET GLOBAL TRANSACTION ISOLATION LEVEL SERIALIZABLE"
    await db[0].query(query1)
    await db[1].query(query1)
    await db[2].query(query1)
