@@ -1004,16 +1004,14 @@ app.get('/', async (req, res) => {
       await reintegrateAll()
       .then (async res => {
          await db[1].beginTransaction();
-         const query = "SELECT * FROM movies";
+         const query = "SELECT * FROM movies ORDER BY year";
          return db[1].query(query)
       })
       .then (async data1 => {
          await db[1].commit();
          try {
-           
-            
             await db[2].beginTransaction();
-            const query = "SELECT * FROM movies";
+            const query = "SELECT * FROM movies ORDER BY year";
             db[2].query(query)
             .then (async data2 => {
                await db[2].commit();
@@ -1025,15 +1023,17 @@ app.get('/', async (req, res) => {
             console.log(error)
             try {
                await db[0].beginTransaction();
-               const query = "SELECT * FROM movies WHERE year >= 1980"
+               const query = "SELECT * FROM movies WHERE year >= 1980 ORDER BY year"
                db[0].query(query)
-               .then (async data => {
+               .then (async data2 => {
                   await db[0].commit();
+                  var data = await data1.concat(data2)
                   console.log("FROM DB1 AND DB0")
                   res.render("ViewSearch", data)
                })
             } catch (error) { //Node 0 cannot begin transac, cannot load half of the data 
                console.log(error)
+               res.render("ViewSearch", data1)
             }
          }
       })
@@ -1041,13 +1041,13 @@ app.get('/', async (req, res) => {
       console.log(error)
       try {
          await db[2].beginTransaction();
-         const query = "SELECT * FROM movies";
+         const query = "SELECT * FROM movies  ORDER BY year";
          db[2].query(query)
          .then (async data1 => {
             await db[2].commit();
             try {
                await db[0].beginTransaction();
-               const query = "SELECT * FROM movies WHERE year < 1980"
+               const query = "SELECT * FROM movies WHERE year < 1980  ORDER BY year"
                db[0].query(query)
                .then (async data2 => {
                   await db[0].commit();
@@ -1057,13 +1057,14 @@ app.get('/', async (req, res) => {
                })
             } catch (error) { //Node 0 cannot begin transac, cannot load half of the data 
                console.log(error)
+               res.render("ViewSearch", data1)
             }
          })
       } catch(error) { //Node 2 cannot begin transac, load all from Node 0
          console.log(error)
          try {
             await db[0].beginTransaction();
-            const query = "SELECT * FROM movies";
+            const query = "SELECT * FROM movies  ORDER BY year";
             db[0].query(query)
             .then (async data => {
                await db[0].commit();
@@ -1082,7 +1083,7 @@ app.get('/search', async(req, res) => {
    console.log(req.query.attribute)
    try {
       await db[1].beginTransaction();
-      const query = `SELECT * FROM movies WHERE ${req.query.attribute} = '${req.query.value}'`
+      const query = `SELECT * FROM movies WHERE ${req.query.attribute} = '${req.query.value}' ORDER BY year`
       console.log(query)
       db[1].query(query)
       .then(async data => {
@@ -1100,7 +1101,7 @@ app.get('/search', async(req, res) => {
    } catch (error) { //node 1 cannot begin transac, search in node 2
       try {
          await db[2].beginTransaction();
-         const query = `SELECT * FROM movies WHERE ${req.query.attribute} = "${req.query.value}"`
+         const query = `SELECT * FROM movies WHERE ${req.query.attribute} = "${req.query.value}" ORDER BY year`
          db[2].query(query)
                .then(async data => {
          console.log(data)
@@ -1118,7 +1119,7 @@ app.get('/search', async(req, res) => {
          console.log(error)
          try {
             await db[0].beginTransaction();
-            const query = `SELECT * FROM movies WHERE ${req.query.attribute} = ${req.query.value}`
+            const query = `SELECT * FROM movies WHERE ${req.query.attribute} = ${req.query.value} ORDER BY year`
             db[0].query(query)
                   .then(async data => {
             console.log(data)
@@ -1397,7 +1398,6 @@ app.post('/update/:id/:year/:title', async(req, res) => {
    })
 });
 
-
 app.get('/generateReport', async(req, res) => {
    try {
       db[0].beginTransaction();
@@ -1509,7 +1509,6 @@ app.get('/generateReport', async(req, res) => {
 
    }
 }); 
-
 
 app.get('/addMovies', async(req, res) => {
    res.render("AddMovies")
