@@ -628,6 +628,317 @@ async function reintegrate0and1() {
                            
                            if (timeStampNode1 > timeStampNode0) {
                               indNodeToBeUpdated = 0
+                              query = `UPDATE movies SET title = "${data1[recordInd].title}", lastUpdated = "${data1[recordInd].lastUpdated}" WHERE id = ${data1[recordInd].id}`
+                           }
+
+                           console.log(query)
+                           await db[indNodeToBeUpdated].query(query)
+                           .then (() => {
+                              console.log("updated node " + indNodeToBeUpdated)
+                              return new Promise(function(resolve, reject) {
+                                 resolve('start of new Promise');
+                                 });
+                              
+                           })
+                     }
+                     catch (error) {
+                        
+                     }
+                     
+                  }
+                  // else if node 1 does not yet have a record corresponding to the current movie from node 0
+                  else
+                  {
+                     console.log("does not include")
+                     try{
+                           // insert a new record in node 1
+                           const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${data0[i].id}, "${data0[i].title}", ${data0[i].year}, ${data0[i].rating}, '${data0[i].genre}', '${data0[i].director}', '${data0[i].actor}', '${data0[i].lastUpdated}')`
+                           console.log(query)
+                           await db[1].query(query)
+                           .then (() => {
+                           console.log("inserted to node 1")
+                           return new Promise(function(resolve, reject) {
+                              resolve('start of new Promise');
+                              });
+                           
+                        })
+                     
+                     }
+                     catch (error) {
+                        
+                     }
+   
+
+                  }
+            
+               }
+
+               // insert records from node1 that are not yet in node 0
+               for (let i = 0; i < data1.length; i++) 
+               {
+                    // colId0 = all column ids of node 0
+                    var colId0 = []
+                    for (let j = 0; j < data0.length; j++)
+                    {
+                       colId0[j] = data0[j].id
+                    }
+
+                    if (!colId0.includes(data1[i].id))
+                    {
+                        console.log("does not include")
+                        try{
+                              // insert a new record in node 0
+                              const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${data1[i].id}, "${data1[i].title}", ${data1[i].year}, ${data1[i].rating}, '${data1[i].genre}', '${data1[i].director}', '${data1[i].actor}', '${data1[i].lastUpdated}')`
+                              console.log(query)
+                              await db[0].query(query)
+                              .then (() => {
+                              console.log("inserted to node 0")
+                              return new Promise(function(resolve, reject) {
+                                 resolve('start of new Promise');
+                                 });
+                              
+                           })
+                        
+                        }
+                        catch (error) {
+                           
+                        }
+                    }
+               }
+
+
+
+            })
+         }  catch (error) { 
+
+         }
+      })
+   } catch (error) {
+
+   }
+}
+
+async function reintegrate0and2() {
+   try {
+      console.log("reintegrate")
+      // get all movies from node 2
+      const query = "SELECT * FROM movies FOR UPDATE"
+      await db[2].query(query)
+      .then (async data2 => {
+         //console.log(data)
+         try {
+            // get all movies from node 0 that are >= 1980
+            await db[0].query("SELECT * FROM movies WHERE year >= 1980")
+            .then (async data0 => {
+
+               //console.log(data2)
+               console.log("data node2: " + data2.length)
+               console.log("data node0: " + data0.length)
+               // for each movie >= 1980 in node 0
+               //console.log(data)
+               for (let i = 0; i < data0.length; i++) // 
+               {
+                  
+                  var colId2 = []
+                  
+                  // colId2 = all column ids of node 2
+                  for (let j = 0; j < data2.length; j++)
+                  {
+                     colId2[j] = data2[j].id
+                  }
+                
+                  //console.log(colId)
+                  console.log("i: " + i)
+                  // if node 2 already has a record corresponding to the current movie from node 0
+                  if (colId2.includes(data0[i].id))
+                  {
+                     console.log("includes")
+                     try{
+                           // update node 2 with the values from node 0
+                           // find in data2 the record that matches with data0[i]
+                           
+                           var found = false
+                           var recordInd = 0
+                           while(!found)
+                           {
+                              if (data2[recordInd].id == data0[i].id)
+                                 found = true
+                              else
+                                 recordInd++
+                           }
+
+
+                           // Split timestamp into [ Y, M, D, h, m, s ]
+                           var t = data0[i].lastUpdated.split(/[- :]/);
+
+                           // Apply each element to the Date function
+                           var timeStampNode0 = new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5]);
+
+                           var t2 = data2[recordInd].lastUpdated.split(/[- :]/);
+                           var timeStampNode2 = new Date(t2[0], t2[1]-1, t2[2], t2[3], t2[4], t2[5]);
+                           
+                           var indNodeToBeUpdated = 2
+                           var query = `UPDATE movies SET title = "${data0[i].title}", lastUpdated = "${data0[i].lastUpdated}" WHERE id = ${data0[i].id}`
+                           
+                           if (timeStampNode2 > timeStampNode0) {
+                              indNodeToBeUpdated = 0
+                              query = `UPDATE movies SET title = "${data2[recordInd].title}", lastUpdated = "${data2[recordInd].lastUpdated}" WHERE id = ${data2[recordInd].id}`
+                           }
+
+                           console.log(query)
+                           await db[indNodeToBeUpdated].query(query)
+                           .then (() => {
+                              console.log("updated node " + indNodeToBeUpdated)
+                              return new Promise(function(resolve, reject) {
+                                 resolve('start of new Promise');
+                                 });
+                              
+                           })
+            
+                        
+
+                     }
+                     catch (error) {
+                        
+                     }
+                     
+                  }
+                  // else if node 2 does not yet have a record corresponding to the current movie from node 0
+                  else
+                  {
+                     console.log("does not include")
+                     try{
+                           // insert a new record in node 2
+                           const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${data0[i].id}, "${data0[i].title}", ${data0[i].year}, ${data0[i].rating}, '${data0[i].genre}', '${data0[i].director}', '${data0[i].actor}', '${data1[i].lastUpdated}')`
+                           console.log(query)
+                           await db[2].query(query)
+                           .then (() => {
+                           console.log("inserted to node 2")
+                           return new Promise(function(resolve, reject) {
+                              resolve('start of new Promise');
+                              });
+                           
+                        })
+                     
+                     }
+                     catch (error) {
+                        
+                     }
+   
+
+                  }
+            
+               }
+
+               // insert records from node 2 that are not yet in node 0
+               for (let i = 0; i < data2.length; i++) 
+               {
+                    // colId0 = all column ids of node 0
+                    var colId0 = []
+                    for (let j = 0; j < data0.length; j++)
+                    {
+                       colId0[j] = data0[j].id
+                    }
+
+                    if (!colId0.includes(data2[i].id))
+                    {
+                        console.log("does not include")
+                        try{
+                              // insert a new record in node 0
+                              const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${data2[i].id}, "${data2[i].title}", ${data2[i].year}, ${data2[i].rating}, '${data2[i].genre}', '${data2[i].director}', '${data2[i].actor}','${data1[i].lastUpdated}')`
+                              console.log(query)
+                              await db[0].query(query)
+                              .then (() => {
+                              console.log("inserted to node 0")
+                              return new Promise(function(resolve, reject) {
+                                 resolve('start of new Promise');
+                                 });
+                              
+                           })
+                        
+                        }
+                        catch (error) {
+                           
+                        }
+                    }
+               }
+
+
+
+            })
+         }  catch (error) { 
+
+         }
+      })
+   } catch (error) {
+
+   }
+}
+
+async function reintegrate0and1() {
+   try {
+      console.log("reintegrate")
+      // get all movies from node 1
+      const query = "SELECT * FROM movies FOR UPDATE"
+      await db[1].query(query)
+      .then (async data1 => {
+         //console.log(data)
+         try {
+            // get all movies from node 0 that are before 1980
+            await db[0].query("SELECT * FROM movies WHERE year < 1980")
+            .then (async data0 => {
+
+               //console.log(data1)
+               console.log("data node1: " + data1.length)
+               console.log("data node0: " + data0.length)
+               // for each movie <1980 in node 0
+               //console.log(data)
+               for (let i = 0; i < data0.length; i++) // 
+               {
+                  
+                  var colId1 = []
+                  
+                  // colId1 = all column ids of node 1
+                  for (let j = 0; j < data1.length; j++)
+                  {
+                     colId1[j] = data1[j].id
+                  }
+                
+                  //console.log(colId)
+                  console.log("i: " + i)
+                  // if node 1 already has a record corresponding to the current movie from node 0
+                  if (colId1.includes(data0[i].id))
+                  {
+                     console.log("includes")
+                     try{
+                           // update node 1 with the values from node 0
+                           // find in data1 the record that matches with data0[i]
+                           
+                           var found = false
+                           var recordInd = 0
+                           while(!found)
+                           {
+                              if (data1[recordInd].id == data0[i].id)
+                                 found = true
+                              else
+                                 recordInd++
+                           }
+
+
+                           // Split timestamp into [ Y, M, D, h, m, s ]
+                           var t = data0[i].lastUpdated.split(/[- :]/);
+
+                           // Apply each element to the Date function
+                           var timeStampNode0 = new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5]);
+
+                           var t1 = data1[recordInd].lastUpdated.split(/[- :]/);
+                           var timeStampNode1 = new Date(t1[0], t1[1]-1, t1[2], t1[3], t1[4], t1[5]);
+                           
+                           var indNodeToBeUpdated = 1
+                           var query = `UPDATE movies SET title = "${data0[i].title}", lastUpdated = "${data0[i].lastUpdated}" WHERE id = ${data0[i].id}`
+                           
+                           if (timeStampNode1 > timeStampNode0) {
+                              indNodeToBeUpdated = 0
                               var query = `UPDATE movies SET title = "${data1[recordInd].title}", lastUpdated = "${data1[i].lastUpdated}" WHERE id = ${data1[recordInd].id}`
                            }
 
