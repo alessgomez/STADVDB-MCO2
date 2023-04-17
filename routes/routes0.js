@@ -577,7 +577,7 @@ async function reintegrate0and1() {
             // get all movies from node 0 that are before 1980
             await db[0].query("SELECT * FROM movies WHERE year < 1980")
             .then (async data0 => {
-
+               
                //console.log(data1)
                console.log("data node1: " + data1.length)
                console.log("data node0: " + data0.length)
@@ -629,6 +629,7 @@ async function reintegrate0and1() {
                            
                            if (timeStampNode1 > timeStampNode0) {
                               indNodeToBeUpdated = 0
+                              console.log("NODE 1 MORE RECENT: " + timeStampNode1 +"     > "  + timeStampNode0)
                               query = `UPDATE movies SET title = "${data1[recordInd].title}", lastUpdated = "${data1[recordInd].lastUpdated}" WHERE id = ${data1[recordInd].id}`
                            }
 
