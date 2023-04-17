@@ -6,10 +6,10 @@ $(document).ready(function(){
         console.log(value)
 
         if (value == "" || attribute == "All")
-            window.location.href = "http://localhost:3000";  
+            window.location.href = "/";  
         else
         {
-            //window.location.href = "/search?" + attribute + "=" + value;
+            window.location.href = "/search?" + attribute + "=" + value;
             $.get('/search', {attribute: attribute, value: value}, function(html) {
                 $("#records-table").empty();
                 $("#records-table").append(html);
