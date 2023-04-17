@@ -621,7 +621,7 @@ async function reintegrate0and1() {
                            var timeStampNode0 = new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5]);
 
                            var t1 = data1[recordInd].lastUpdated.split(/[- :]/);
-                           var timeStampNode1 = new Date(t1[0], t1[1]-1, t1[2], t1[3], t1[4], t1[5);
+                           var timeStampNode1 = new Date(t1[0], t1[1]-1, t1[2], t1[3], t1[4], t1[5]);
                            
                            var indNodeToBeUpdated = 1
                            var query = `UPDATE movies SET title = "${data0[i].title}" WHERE id = ${data0[i].id}`
