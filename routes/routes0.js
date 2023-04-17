@@ -584,12 +584,7 @@ async function reintegrate0and1() {
             // get all movies from node 0 that are before 1980
             await db[0].query("SELECT * FROM movies WHERE year < 1980")
             .then (async data0 => {
-               
-               //console.log(data1)
-               console.log("data node1: " + data1.length)
-               console.log("data node0: " + data0.length)
-               // for each movie <1980 in node 0
-               //console.log(data)
+
                for (let i = 0; i < data0.length; i++) // 
                {
                   
@@ -600,16 +595,13 @@ async function reintegrate0and1() {
                   {
                      colId1[j] = data1[j].id
                   }
-                
-                  //console.log(colId)
-                  console.log("i: " + i)
                   // if node 1 already has a record corresponding to the current movie from node 0
                   if (colId1.includes(data0[i].id))
                   {
                      try{
                            // update node 1 with the values from node 0
                            // find in data1 the record that matches with data0[i]
-                           
+                           console.log("PUMASOK SA TRY ");
                            var found = false
                            var recordInd = 0
                            while(!found)
