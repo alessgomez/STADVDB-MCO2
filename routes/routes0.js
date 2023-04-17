@@ -1235,7 +1235,7 @@ app.post('/insertMovie', async(req, res) => {
    .then(result => {
       logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'COMMIT')`)
       console.log("commit added to db")
-      db[0].destroy()
+      
    })
    .then(async result => {
       try {
@@ -1386,7 +1386,7 @@ app.post('/update/:id/:year/:title', async(req, res) => {
    .then(result => {
       console.log("888")
       logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'COMMIT')`)
-      //db[0].destroy()
+      db[0].destroy()
    })
    .then(async result => {
       console.log("999")
