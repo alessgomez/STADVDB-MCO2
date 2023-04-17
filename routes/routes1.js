@@ -1255,6 +1255,7 @@ app.post('/insertMovie', async(req, res) => {
          await db[slaveInd].beginTransaction();
       } catch(error) {
          await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+         res.redirect("/addMovies")
          throw error
       }
    })
@@ -1271,6 +1272,7 @@ app.post('/insertMovie', async(req, res) => {
          await db[slaveInd].query(query)
       } catch(error) {
          await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+         res.redirect("/addMovies")
          throw error
       }
    })
@@ -1282,6 +1284,7 @@ app.post('/insertMovie', async(req, res) => {
          await db[slaveInd].commit();
       } catch(error) {
          await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+         res.redirect("/addMovies")
          throw error
       }
       
