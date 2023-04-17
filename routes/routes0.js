@@ -615,8 +615,8 @@ async function reintegrate0and1() {
 
                            
                            // Split timestamp into [ Y, M, D, h, m, s ]
-                           var t0 = data0[i].lastUpdated.split(/[- :]/);
-                           var t1 = data1[recordInd].lastUpdated.split(/[- :]/);
+                           var t0 = await data0[i].lastUpdated.split(/[- :]/);
+                           var t1 = await data1[recordInd].lastUpdated.split(/[- :]/);
                            console.log("PUMASOK SA TRY 3");
                            // Apply each element to the Date function
                            var timeStampNode0 = new Date(t0[0], t0[1]-1, t0[2], t0[3], t0[4], t0[5]);
