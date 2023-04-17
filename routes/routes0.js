@@ -645,7 +645,8 @@ async function reintegrate0and1() {
 
 
                            console.log("data1: ")
-                           console.log(new Date(data1[recordInd].lastUpdated.toString()))
+                           
+                           console.log(data1[recordInd].lastUpdated)
 
                            if (data0[i].lastUpdated == null && data1[recordInd] != null)
                            {
@@ -673,7 +674,10 @@ async function reintegrate0and1() {
                            console.log("REINTEG DEBUG 1(node0): " + data0[i].lastUpdated)
                            console.log("REINTEG DEBUG 2(node1): " + data1[recordInd].lastUpdated)
                           
-
+                           if (data0[i].lastUpdated > data1[recordInd].lastUpdated)
+                              console.log("node 0 greater than node 1")
+                           else
+                           console.log("node 1 greater than node 0")
                            console.log("REINTEG DEBUG 3: " + indNodeToBeUpdated)
                            console.log("REINTEG 4: " + query)
 
