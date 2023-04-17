@@ -14,6 +14,18 @@ var ctr2 = 0;
 
 [db[0], db[1], db[2], logDb[0], logDb[1], logDb[2]] = require("../database")
 
+async function setUpMySQL() {
+   var query1 = "SET PERSIST innodb_lock_wait_timeout = 120"
+   var query2 = "SET PERSIST ISOLATION LEVEL READ UNCOMMITTED"
+   await db[0].query(query1)
+   await db[1].query(query1)
+   await db[2].query(query1)
+
+   await db[0].query(query2)
+   await db[1].query(query2)
+   await db[2].query(query2)
+}
+
 async function recover0(){
    undo = []   
    redo = []
@@ -990,60 +1002,36 @@ function insertInNewMaster(req, lastUpdated) {
 
 app.get('/', async (req, res) => {
    try { 
+      await setUpMySQL()
       await recoverAll()
       await clearAllLogs()
       await reintegrateAll()
       .then (async res => {
-         await db[1].beginTransaction();
+         await db[0].beginTransaction();
          const query = "SELECT * FROM movies ORDER BY year";
-         return db[1].query(query)
+         return db[0].query(query)
       })
-      .then (async data1 => {
-         await db[1].commit();
-         try {
-            await db[2].beginTransaction();
-            const query = "SELECT * FROM movies ORDER BY year";
-            db[2].query(query)
-            .then (async data2 => {
-               await db[2].commit();
-               var data = await data1.concat(data2)
-               console.log("FROM DB1 AND DB2")
-               res.render("ViewSearch", data)
-            })
-         } catch (error) { //Node 2 cannot begin transac, load half from Node 0
-            console.log(error)
-            try {
-               await db[0].beginTransaction();
-               const query = "SELECT * FROM movies WHERE year >= 1980 ORDER BY year"
-               db[0].query(query)
-               .then (async data2 => {
-                  await db[0].commit();
-                  var data = await data1.concat(data2)
-                  console.log("FROM DB1 AND DB0")
-                  res.render("ViewSearch", data)
-               })
-            } catch (error) { //Node 0 cannot begin transac, cannot load half of the data 
-               console.log(error)
-               res.render("ViewSearch", data1)
-            }
-         }
+      .then (async data => {
+         await db[0].commit();
+         console.log("FROM DB0")
+         res.render("ViewSearch", data)
       })
-   } catch (error) { //Node 1 cannot begin transac, load from Node 2 and/or Node 0
+   } catch (error) { //Node 0 cannot begin transac, load from Node 1 and/or Node 2
       console.log(error)
       try {
-         await db[2].beginTransaction();
+         await db[1].beginTransaction();
          const query = "SELECT * FROM movies  ORDER BY year";
-         db[2].query(query)
+         db[1].query(query)
          .then (async data1 => {
-            await db[2].commit();
+            await db[1].commit();
             try {
-               await db[0].beginTransaction();
-               const query = "SELECT * FROM movies WHERE year < 1980  ORDER BY year"
-               db[0].query(query)
+               await db[2].beginTransaction();
+               const query = "SELECT * FROM movies ORDER BY year"
+               db[2].query(query)
                .then (async data2 => {
-                  await db[0].commit();
+                  await db[2].commit();
                   var data = await data1.concat(data2)
-                  console.log("FROM DB2 AND DB0")
+                  console.log("FROM DB1 AND DB2")
                   res.render("ViewSearch", data)
                })
             } catch (error) { //Node 0 cannot begin transac, cannot load half of the data 
@@ -1051,18 +1039,18 @@ app.get('/', async (req, res) => {
                res.render("ViewSearch", data1)
             }
          })
-      } catch(error) { //Node 2 cannot begin transac, load all from Node 0
+      } catch(error) { //Node 0 and Node 1 cannot begin transac, load half from Node 2
          console.log(error)
          try {
-            await db[0].beginTransaction();
+            await db[2].beginTransaction();
             const query = "SELECT * FROM movies  ORDER BY year";
-            db[0].query(query)
+            db[2].query(query)
             .then (async data => {
-               await db[0].commit();
-               console.log("FROM DB0")
+               await db[2].commit();
+               console.log("FROM DB2")
                res.render("ViewSearch", data)
             })
-         } catch (error) { //Node 0 cannot begin transac, cannot load any data
+         } catch (error) { //Node 2 cannot begin transac, cannot load any data
             console.log(error)
             res.render("ViewSearch")
          }
@@ -1074,9 +1062,24 @@ app.get('/search', async(req, res) => {
    console.log("search")
    console.log(req.query.attribute)
    try {
-      await db[1].beginTransaction();
+      await db[0].beginTransaction();
       const query = `SELECT * FROM movies WHERE ${req.query.attribute} = '${req.query.value}' ORDER BY year`
       console.log(query)
+      db[0].query(query)
+      .then(async data => {
+         await db[0].commit();
+         res.render('partials/rows', data, function(err, html) {
+            if (err)
+            {
+                throw err;
+            } 
+            res.send(html);
+        });
+      })
+   } catch (error) { //node 0 cannot begin transac, search in node 1 and node 2
+      await db[1].beginTransaction();
+      const query = `SELECT * FROM movies WHERE ${req.query.attribute} = '${req.query.value}' ORDER BY year`
+
       db[1].query(query)
       .then(async data1 => {
          await db[1].commit();
@@ -1096,77 +1099,33 @@ app.get('/search', async(req, res) => {
            });
          })
          } catch (error) { //node 2 cannot begin transac, search in node 0
-            console.log(error)
             try {
-               await db[0].beginTransaction();
-               const query = `SELECT * FROM movies WHERE ${req.query.attribute} = '${req.query.value}' AND year > 1980 ORDER BY year`
-               db[0].query(query)
-               .then(async data2 => {
-               await db[0].commit();
-               var data = await data1.concat(data2)
+               await db[2].beginTransaction();
+               const query = `SELECT * FROM movies WHERE ${req.query.attribute} = '${req.query.value}' ORDER BY year`
+               db[2].query(query)
+               .then(async data => {
+               await db[2].commit();
+               res.render('partials/rows', data, function(err, html) {
+                  if (err)
+                  {
+                     throw err;
+                  } 
+                  console.log("HTML: " + html);
+                  res.send(html);
+               });
+               })
+            } catch (error) { //node 2 cannot begin transac, only from node1
+               var data = []
                res.render('partials/rows', data, function(err, html) {
                   if (err)
                   {
                       throw err;
                   } 
-                  console.log("HTML: " + html);
-                  res.send(html);
-              });
-            })
-            } catch (error) { //node 0 cannot begin transac, only from node1
-               res.render('partials/rows', data1, function(err, html) {
-                  if (err)
-                  {
-                      throw err;
-                  } 
-                  console.log("HTML: " + html);
                   res.send(html);
               });
             }
          }
       })
-   } catch (error) { //node 1 cannot begin transac, search in node 0
-      try {
-         await db[0].beginTransaction();
-         const query = `SELECT * FROM movies WHERE ${req.query.attribute} = '${req.query.value}' ORDER BY year`
-         db[0].query(query)
-         .then(async data => {
-         await db[0].commit();
-         res.render('partials/rows', data, function(err, html) {
-            if (err)
-            {
-                throw err;
-            } 
-            res.send(html);
-        });
-      })
-      } catch (error) { //node 0 cannot begin transac, search in node 2
-         console.log(error)
-         try {
-            await db[2].beginTransaction();
-            const query = `SELECT * FROM movies WHERE ${req.query.attribute} = '${req.query.value}' ORDER BY year`
-            db[2].query(query)
-            .then(async data => {
-            await db[2].commit();
-            res.render('partials/rows', data, function(err, html) {
-               if (err)
-               {
-                   throw err;
-               } 
-               res.send(html);
-           });
-         })
-         } catch (error) { //node 0 cannot begin transac, cannot search
-            var data = [];
-            res.render('partials/rows', data, function(err, html) {
-               if (err)
-               {
-                   throw err;
-               } 
-               res.send(html);
-           });
-         }
-      }
    }
 }); 
 
