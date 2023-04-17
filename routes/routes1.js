@@ -1064,6 +1064,7 @@ app.get('/', async (req, res) => {
             })
          } catch (error) { //Node 0 cannot begin transac, cannot load any data
             console.log(error)
+            res.render("ViewSearch")
          }
       }
    }   
@@ -1126,6 +1127,14 @@ app.get('/search', async(req, res) => {
          })
          } catch (error) { //node 0 cannot begin transac, cannot search
             console.log(error)
+            res.render('partials\\rows', data, function(err, html) {
+               if (err)
+               {
+                   throw err;
+               } 
+               console.log("HTML: " + html);
+               res.send(html);
+           });
          }
       }
    }
