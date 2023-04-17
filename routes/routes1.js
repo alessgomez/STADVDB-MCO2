@@ -1099,7 +1099,7 @@ app.get('/search', async(req, res) => {
             console.log(error)
             try {
                await db[0].beginTransaction();
-               const query = `SELECT * FROM movies WHERE ${req.query.attribute} = '${req.query.value}' AND year > 1980 ORDER BY year`
+               const query = `SELECT * FROM movies WHERE ${req.query.attribute} = '${req.query.value}' AND year >= 1980 ORDER BY year`
                db[0].query(query)
                .then(async data2 => {
                await db[0].commit();
