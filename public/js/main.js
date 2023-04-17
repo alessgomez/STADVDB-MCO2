@@ -9,7 +9,7 @@ $(document).ready(function(){
             window.location.href = "http://localhost:3000";  
         else
         {
-            //window.location.href = "http://localhost:3000/search?" + attribute + "=" + value;
+            //window.location.href = "/search?" + attribute + "=" + value;
             $.get('/search', {attribute: attribute, value: value}, function(html) {
                 $("#records-table").empty();
                 $("#records-table").append(html);
