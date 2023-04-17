@@ -24,7 +24,7 @@ app.get("/checkdate", async (req,res) => {
 
 async function setUpMySQL() {
    var query1 = "SET PERSIST innodb_lock_wait_timeout = 10"
-   var query2 = "SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED"
+   var query2 = "SET GLOBAL TRANSACTION ISOLATION LEVEL READ UNCOMMITTED"
    await db[0].query(query1)
    await db[1].query(query1)
    await db[2].query(query1)

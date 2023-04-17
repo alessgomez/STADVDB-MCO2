@@ -15,8 +15,8 @@ var ctr2 = 0;
 [db[0], db[1], db[2], logDb[0], logDb[1], logDb[2]] = require("../database")
 
 async function setUpMySQL() {
-   var query1 = "SET PERSIST innodb_lock_wait_timeout = 120"
-   var query2 = "SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED"
+   var query1 = "SET PERSIST innodb_lock_wait_timeout = 10"
+   var query2 = "SET GLOBAL TRANSACTION ISOLATION LEVEL READ UNCOMMITTED"
    await db[0].query(query1)
    await db[1].query(query1)
    await db[2].query(query1)
@@ -605,35 +605,44 @@ async function reintegrate0and1() {
                            console.log("PUMASOK SA TRY 2");
 
                            
+                           var indNodeToBeUpdated = 1
+                           var query = `UPDATE movies SET title = "${data0[i].title}", lastUpdated = "${data0[i].lastUpdated}" WHERE id = ${data0[i].id}`
+
                            // Split timestamp into [ Y, M, D, h, m, s ]
                            try {
-                              var t0 = data0[i].lastUpdated.split(/[- :]/);
-                              var t1 = data1[recordInd].lastUpdated.split(/[- :]/);
+                              if (data1[recordInd].lastUpdated > data0[i].lastUpdated) {
+                           
+                                 indNodeToBeUpdated = 0
+                                 query = `UPDATE movies SET title = "${data1[recordInd].title}", lastUpdated = "${data1[i].lastUpdated}"  WHERE id = ${data1[recordInd].id}`
+                              }
                            } catch (error) {
                               console.log("ERROR AFTER TRY 2 data0" + data0[i].lastUpdated)
                               console.log("ERROR AFTER TRY 2 data1" + data1[recordInd].lastUpdated)
-                              
                               console.log("ERROR AFTER TRY 2" + error)
+
+                              if (data0[i].lastUpdated == null && data1[recordInd] != null)
+                              {
+                                 indNodeToBeUpdated = 0
+                                 query = `UPDATE movies SET title = "${data1[recordInd].title}", lastUpdated = "${data1[i].lastUpdated}"  WHERE id = ${data1[recordInd].id}`
+                              }
+
                            }
 
                            console.log("PUMASOK SA TRY 3");
                            // Apply each element to the Date function
-                           var timeStampNode0 = new Date(t0[0], t0[1]-1, t0[2], t0[3], t0[4], t0[5]);
-                           var timeStampNode1 = new Date(t1[0], t1[1]-1, t1[2], t1[3], t1[4], t1[5]);
+                          
                            console.log("PUMASOK SA TRY 4");
-                           var indNodeToBeUpdated = 1
-                           var query = `UPDATE movies SET title = "${data0[i].title}", lastUpdated = "${data0[i].lastUpdated}" WHERE id = ${data0[i].id}`
+                          
                            
                            console.log("PUMASOK SA TRY 5");
 
                            console.log("REINTEG DEBUG 1(node0): " + data0[i].title)
                            console.log("REINTEG DEBUG 2(node1): " + data1[recordInd].title)
-                           if (timeStampNode1 > timeStampNode0) {
-                           
-                              indNodeToBeUpdated = 0
-                              query = `UPDATE movies SET title = "${data1[recordInd].title}", lastUpdated = "${data1[i].lastUpdated}"  WHERE id = ${data1[recordInd].id}`
-                         
-                           }
+
+                           console.log("REINTEG DEBUG 1(node0): " + data0[i].lastUpdated)
+                           console.log("REINTEG DEBUG 2(node1): " + data1[recordInd].lastUpdated)
+                          
+
                            console.log("REINTEG DEBUG 3: " + indNodeToBeUpdated)
                            console.log("REINTEG 4: " + query)
 
@@ -770,22 +779,30 @@ async function reintegrate0and2() {
                                  recordInd++
                            }
 
-                                                
-                           // Split timestamp into [ Y, M, D, h, m, s ]
-                           var t0 = data0[i].lastUpdated.split(/[- :]/);
-                           var t2 = data2[recordInd].lastUpdated.split(/[- :]/);
-
-                           // Apply each element to the Date function
-                           var timeStampNode0 = new Date(t0[0], t0[1]-1, t0[2], t0[3], t0[4], t0[5]);
-                           var timeStampNode2 = new Date(t2[0], t2[1]-1, t2[2], t2[3], t2[4], t2[5]);
-
                            var indNodeToBeUpdated = 2
                            var query = `UPDATE movies SET title = "${data0[i].title}", lastUpdated = "${data0[i].lastUpdated}" WHERE id = ${data0[i].id}`
+
+                           try {
+                              if (data2[recordInd].lastUpdated > data0[i].lastUpdated) {
                            
-                           if (timeStampNode2 > timeStampNode0) {
-                              indNodeToBeUpdated = 0
-                              query = `UPDATE movies SET title = "${data2[recordInd].title}", lastUpdated = "${data2[i].lastUpdated}" WHERE id = ${data2[recordInd].id}`
+                                 indNodeToBeUpdated = 0
+                                 query = `UPDATE movies SET title = "${data2[recordInd].title}", lastUpdated = "${data2[i].lastUpdated}"  WHERE id = ${data2[recordInd].id}`
+                              }
+                           } catch (error) {
+                              console.log("ERROR AFTER TRY 2 data0" + data0[i].lastUpdated)
+                              console.log("ERROR AFTER TRY 2 data1" + data2[recordInd].lastUpdated)
+                              console.log("ERROR AFTER TRY 2" + error)
+
+                              if (data0[i].lastUpdated == null && data2[recordInd] != null)
+                              {
+                                 indNodeToBeUpdated = 0
+                                 query = `UPDATE movies SET title = "${data2[recordInd].title}", lastUpdated = "${data2[i].lastUpdated}"  WHERE id = ${data2[recordInd].id}`
+                              }
+
                            }
+                                                
+                          
+                       
 
                            
                            await db[indNodeToBeUpdated].query(query)
@@ -878,6 +895,126 @@ async function reintegrate0and2() {
    }
 }
 
+function updateInNewMaster(id, year, oldTitle, newTitle, lastUpdated) {
+   var transacNo;
+   var slaveInd;
+
+   if (year < 1980)
+      slaveInd = 1;
+   else 
+      slaveInd = 2;
+   
+   logDb[slaveInd].query("SELECT MAX(transaction_no) AS max FROM log")
+   .then(result => {
+      console.log("111")
+      if (result[0].max == null)
+         transacNo = 0
+      else 
+         transacNo = result[0].max + 1
+   })
+   .then(result => {
+      logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'START')`)
+   })
+   .then(async result => {
+      console.log("444")
+      try {
+         await db[slaveInd].beginTransaction();
+      } catch(error) {
+         await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+         throw error
+      }
+   })
+   .then(result => {
+      console.log("555")
+      const query = `UPDATE movies SET title = '${newTitle}', lastUpdated = '${lastUpdated}' WHERE id = ${id}`;
+      return query
+   })
+   .then(query => {
+      logDb[slaveInd].query(`INSERT INTO log(transaction_no, row_no, col_name, old_value, new_value, query) VALUES (${transacNo}, ${id}, 'title', '${oldTitle}', '${newTitle}', "${query}")`)
+      return query
+   })
+   .then(async query => {
+      try {
+         await db[slaveInd].query(query)
+      } catch (error) {
+         await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+         throw error
+      }
+   })
+   .then(result => {
+      console.log("888")
+      logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'COMMIT')`)
+   })
+   .then(async result => {
+      console.log("999")
+      try {
+         await db[slaveInd].commit()
+      } catch(error) {
+         await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+         throw error
+      }
+      
+   })
+}
+
+function insertInNewMaster(req, lastUpdated) {
+   var year = req.body.year;
+   if (year < 1980)
+      slaveInd = 1;
+   else 
+      slaveInd = 2;
+
+   logDb[slaveInd].query("SELECT MAX(transaction_no) AS max FROM log")
+   .then(result => {
+      if (result[0].max == null)
+         transacNo = 0
+      else 
+         transacNo = result[0].max + 1      
+   })
+   .then(result => {
+      logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'START')`)
+   })
+   .then(async result => {
+      console.log("444")
+      try {
+         await db[slaveInd].beginTransaction();
+      } catch(error) {
+         await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+         throw error
+      }
+   })
+   .then(result => {
+      console.log("555")
+      const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${req.body.id}, '${req.body.title}', ${req.body.year}, ${req.body.rank}, '${req.body.genre}', '${req.body.director}', '${req.body.actor}', '${lastUpdated}')`
+      return query
+   })
+   .then(query => {
+      logDb[slaveInd].query(`INSERT INTO log(transaction_no, row_no, query) VALUES (${transacNo}, ${req.body.id}, "${query}")`)
+      return query
+   })
+   .then(async query => {
+      try {
+         await db[slaveInd].query(query)
+      } catch (error) {
+         console.log(error)
+         await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+         throw error
+      }
+   })
+   .then(result => {
+      console.log("888")
+      logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'COMMIT')`)
+   })
+   .then(async result => {
+      console.log("999")
+      try {
+         await db[slaveInd].commit()
+      } catch(error) {
+         await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+         throw error
+      }
+   })
+}
 
 function updateInNewMaster(id, year, oldTitle, newTitle, lastUpdated) {
    var transacNo;
