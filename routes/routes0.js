@@ -198,6 +198,7 @@ async function recover0(){
                console.log(error)
             }  
          }
+         clearLog0()
       })
    } catch (error) { 
       console.log(error)
