@@ -25,6 +25,7 @@ async function setUpMySQL() {
    await db[1].query(query2)
    await db[2].query(query2)
 }
+
 async function recover0(){
    undo = []   
    redo = []
@@ -51,6 +52,8 @@ async function recover0(){
          return logDb[0].query(query)
       })
       .then (data2 => {
+         console.log("all node 0 logs:")
+         console.log(data2)
          logs = data2
          for (let j = 0; j <= maxTNo; j++)
          { 
@@ -68,12 +71,19 @@ async function recover0(){
                   k += 1
                }
             }
+
+            var hasCommit = false
+            for (let m = 0; m < currLogs.length; m++)
+            {
+               if (currLogs[m].query == "COMMIT")
+                  hasCommit = true
+            }
             
             // if transaction no. has commit, push to redo
-            if (currLogs[currLogs.length-1].query == "COMMIT")
+            if (hasCommit)
                redo.push(currTransactionNo)
             // else push to undo if last log is not abort
-            else if (currLogs[currLogs.length-1].query != "ABORT")
+            else 
                undo.push(currTransactionNo)
                  
          }
@@ -223,10 +233,18 @@ async function recover1(){
                   k += 1
                }
             }
+
+            var hasCommit = false
+            for (let m = 0; m < currLogs.length; m++)
+            {
+               if (currLogs[m].query == "COMMIT")
+                  hasCommit = true
+            }
             
             // if transaction no. has commit, push to redo
-            if (currLogs[currLogs.length-1].query == "COMMIT")
+            if (hasCommit)
                redo.push(currTransactionNo)
+            
             // else push to undo if last log is not abort
             else if (currLogs[currLogs.length-1].query != "ABORT")
                undo.push(currTransactionNo)
@@ -397,10 +415,17 @@ async function recover2() {
                   k += 1
                }
             }
+            var hasCommit = false
+            for (let m = 0; m < currLogs.length; m++)
+            {
+               if (currLogs[m].query == "COMMIT")
+                  hasCommit = true
+            }
             
             // if transaction no. has commit, push to redo
-            if (currLogs[currLogs.length-1].query == "COMMIT")
+            if (hasCommit)
                redo.push(currTransactionNo)
+      
             // else push to undo if last log is not abort
             else if (currLogs[currLogs.length-1].query != "ABORT")
                undo.push(currTransactionNo)
@@ -514,7 +539,6 @@ async function recover2() {
       console.log(error)
    }
 }
-
 async function clearLog0() {
    try {
       const query = "DELETE FROM log" 
