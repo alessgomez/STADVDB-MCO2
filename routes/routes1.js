@@ -1078,61 +1078,91 @@ app.get('/search', async(req, res) => {
       const query = `SELECT * FROM movies WHERE ${req.query.attribute} = '${req.query.value}' ORDER BY year`
       console.log(query)
       db[1].query(query)
-      .then(async data => {
-         console.log("search")
+      .then(async data1 => {
          await db[1].commit();
-         res.render('partials\\rows', data, function(err, html) {
-            if (err)
-            {
-                throw err;
-            } 
-            console.log("HTML: " + html);
-            res.send(html);
-        });
-      })
-   } catch (error) { //node 1 cannot begin transac, search in node 2
-      try {
-         await db[2].beginTransaction();
-         const query = `SELECT * FROM movies WHERE ${req.query.attribute} = "${req.query.value}" ORDER BY year`
-         db[2].query(query)
-               .then(async data => {
-         console.log(data)
-         await db[2].commit();
-         res.render('partials\\rows', data, function(err, html) {
-            if (err)
-            {
-                throw err;
-            } 
-            console.log("HTML: " + html);
-            res.send(html);
-        });
-      })
-      } catch (error) { //node 2 cannot begin transac, search in node 0
-         console.log(error)
+
          try {
-            await db[0].beginTransaction();
-            const query = `SELECT * FROM movies WHERE ${req.query.attribute} = ${req.query.value} ORDER BY year`
-            db[0].query(query)
-                  .then(async data => {
-            console.log(data)
-            await db[0].commit();
+            await db[2].beginTransaction();
+            const query = `SELECT * FROM movies WHERE ${req.query.attribute} = "${req.query.value}" ORDER BY year`
+            db[2].query(query)
+            .then(async data2 => {
+            await db[2].commit();
+            var data = await data1.concat(data2)
             res.render('partials\\rows', data, function(err, html) {
                if (err)
                {
                    throw err;
                } 
-               console.log("HTML: " + html);
+               res.send(html);
+           });
+         })
+         } catch (error) { //node 2 cannot begin transac, search in node 0
+            console.log(error)
+            try {
+               await db[0].beginTransaction();
+               const query = `SELECT * FROM movies WHERE ${req.query.attribute} = ${req.query.value} AND year > 1980 ORDER BY year`
+               db[0].query(query)
+               .then(async data2 => {
+               await db[0].commit();
+               var data = await data1.concat(data2)
+               res.render('partials\\rows', data, function(err, html) {
+                  if (err)
+                  {
+                      throw err;
+                  } 
+                  console.log("HTML: " + html);
+                  res.send(html);
+              });
+            })
+            } catch (error) { //node 0 cannot begin transac, cannot search
+               res.render('partials\\rows', data, function(err, html) {
+                  if (err)
+                  {
+                      throw err;
+                  } 
+                  console.log("HTML: " + html);
+                  res.send(html);
+              });
+            }
+         }
+      })
+   } catch (error) { //node 1 cannot begin transac, search in node 0
+      try {
+         await db[0].beginTransaction();
+         const query = `SELECT * FROM movies WHERE ${req.query.attribute} = "${req.query.value}" ORDER BY year`
+         db[0].query(query)
+         .then(async data => {
+         await db[0].commit();
+         res.render('partials\\rows', data, function(err, html) {
+            if (err)
+            {
+                throw err;
+            } 
+            res.send(html);
+        });
+      })
+      } catch (error) { //node 0 cannot begin transac, search in node 2
+         console.log(error)
+         try {
+            await db[2].beginTransaction();
+            const query = `SELECT * FROM movies WHERE ${req.query.attribute} = ${req.query.value} ORDER BY year`
+            db[2].query(query)
+            .then(async data => {
+            await db[2].commit();
+            res.render('partials\\rows', data, function(err, html) {
+               if (err)
+               {
+                   throw err;
+               } 
                res.send(html);
            });
          })
          } catch (error) { //node 0 cannot begin transac, cannot search
-            console.log(error)
             res.render('partials\\rows', data, function(err, html) {
                if (err)
                {
                    throw err;
                } 
-               console.log("HTML: " + html);
                res.send(html);
            });
          }
