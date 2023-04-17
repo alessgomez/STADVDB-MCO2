@@ -619,7 +619,7 @@ async function reintegrate0and1() {
                               var t0 = data0[i].lastUpdated.split(/[- :]/);
                               var t1 = data1[recordInd].lastUpdated.split(/[- :]/);
                            } catch (error) {
-                              console.log("ERROR AFTER TRY 2" : error)
+                              console.log("ERROR AFTER TRY 2" + error)
                            }
 
                            console.log("PUMASOK SA TRY 3");
