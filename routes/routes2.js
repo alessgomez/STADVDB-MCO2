@@ -94,7 +94,7 @@ async function recover0(){
             try {
                // select all logs with current transaction no.
                const query = "SELECT * FROM log WHERE transaction_no = " + undo[i]
-               console.log(query)
+
                //console.log(logs)
                currTransactionNo = undo[i]
                console.log("log for transaction no " + currTransactionNo + ": ")
@@ -144,7 +144,7 @@ async function recover0(){
          {
             try {
                const query = "SELECT * FROM log WHERE transaction_no = " + redo[i]
-               console.log(query)
+
                // get all logs with curerent transaction no
                currTransactionNo = redo[i]
                console.log("log for transaction no " + currTransactionNo + ": ")
@@ -249,7 +249,7 @@ async function recover1(){
             try {
                // select all logs with current transaction no.
                const query = "SELECT * FROM log WHERE transaction_no = " + undo[i]
-               console.log(query)
+
                //console.log(logs)
                currTransactionNo = undo[i]
                console.log("log for transaction no " + currTransactionNo + ": ")
@@ -299,7 +299,7 @@ async function recover1(){
          {
             try {
                const query = "SELECT * FROM log WHERE transaction_no = " + redo[i]
-               console.log(query)
+
                // get all logs with curerent transaction no
                currTransactionNo = redo[i]
                console.log("log for transaction no " + currTransactionNo + ": ")
@@ -423,7 +423,7 @@ async function recover2() {
             try {
                // select all logs with current transaction no.
                const query = "SELECT * FROM log WHERE transaction_no = " + undo[i]
-               console.log(query)
+               
                //console.log(logs)
                currTransactionNo = undo[i]
                console.log("log for transaction no " + currTransactionNo + ": ")
@@ -473,7 +473,7 @@ async function recover2() {
          {
             try {
                const query = "SELECT * FROM log WHERE transaction_no = " + redo[i]
-               console.log(query)
+               
                // get all logs with curerent transaction no
                currTransactionNo = redo[i]
                console.log("log for transaction no " + currTransactionNo + ": ")
@@ -577,7 +577,7 @@ async function reintegrate0and1() {
             // get all movies from node 0 that are before 1980
             await db[0].query("SELECT * FROM movies WHERE year < 1980")
             .then (async data0 => {
-
+               
                //console.log(data1)
                console.log("data node1: " + data1.length)
                console.log("data node0: " + data0.length)
@@ -599,7 +599,6 @@ async function reintegrate0and1() {
                   // if node 1 already has a record corresponding to the current movie from node 0
                   if (colId1.includes(data0[i].id))
                   {
-                     console.log("includes")
                      try{
                            // update node 1 with the values from node 0
                            // find in data1 the record that matches with data0[i]
@@ -615,18 +614,24 @@ async function reintegrate0and1() {
                            }
 
 
-                           var timeStampNode0 = new Date(data0[i].lastUpdated).getTime();
-                           var timeStampNode1 = new Date(data1[recordInd].lastUpdated).getTime();
+                     
+                           // Split timestamp into [ Y, M, D, h, m, s ]
+                           var t0 = data0[i].lastUpdated.split(/[- :]/);
+                           var t1 = data1[recordInd].lastUpdated.split(/[- :]/);
+
+                           // Apply each element to the Date function
+                           var timeStampNode0 = new Date(t0[0], t0[1]-1, t0[2], t0[3], t0[4], t0[5]);
+                           var timeStampNode1 = new Date(t1[0], t1[1]-1, t1[2], t1[3], t1[4], t1[5]);
                            
                            var indNodeToBeUpdated = 1
                            var query = `UPDATE movies SET title = "${data0[i].title}", lastUpdated = "${data0[i].lastUpdated}" WHERE id = ${data0[i].id}`
                            
                            if (timeStampNode1 > timeStampNode0) {
                               indNodeToBeUpdated = 0
-                              var query = `UPDATE movies SET title = "${data1[recordInd].title}" WHERE id = ${data1[recordInd].id}`
+                              query = `UPDATE movies SET title = "${data1[recordInd].title}", lastUpdated = "${data1[i].lastUpdated}"  WHERE id = ${data1[recordInd].id}`
                            }
 
-                           console.log(query)
+                           
                            await db[indNodeToBeUpdated].query(query)
                            .then (() => {
                               console.log("updated node " + indNodeToBeUpdated)
@@ -648,7 +653,7 @@ async function reintegrate0and1() {
                      try{
                            // insert a new record in node 1
                            const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${data0[i].id}, "${data0[i].title}", ${data0[i].year}, ${data0[i].rating}, '${data0[i].genre}', '${data0[i].director}', '${data0[i].actor}', '${data0[i].lastUpdated}')`
-                           console.log(query)
+                           
                            await db[1].query(query)
                            .then (() => {
                            console.log("inserted to node 1")
@@ -680,11 +685,10 @@ async function reintegrate0and1() {
 
                     if (!colId0.includes(data1[i].id))
                     {
-                        console.log("does not include")
                         try{
                               // insert a new record in node 0
                               const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${data1[i].id}, "${data1[i].title}", ${data1[i].year}, ${data1[i].rating}, '${data1[i].genre}', '${data1[i].director}', '${data1[i].actor}', '${data1[i].lastUpdated}')`
-                              console.log(query)
+                              
                               await db[0].query(query)
                               .then (() => {
                               console.log("inserted to node 0")
@@ -700,6 +704,7 @@ async function reintegrate0and1() {
                         }
                     }
                }
+               console.log("node 0 and  1 reintegrated")
 
 
 
@@ -742,12 +747,9 @@ async function reintegrate0and2() {
                      colId2[j] = data2[j].id
                   }
                 
-                  //console.log(colId)
-                  console.log("i: " + i)
                   // if node 2 already has a record corresponding to the current movie from node 0
                   if (colId2.includes(data0[i].id))
                   {
-                     console.log("includes")
                      try{
                            // update node 2 with the values from node 0
                            // find in data2 the record that matches with data0[i]
@@ -762,19 +764,24 @@ async function reintegrate0and2() {
                                  recordInd++
                            }
 
+                                                
+                           // Split timestamp into [ Y, M, D, h, m, s ]
+                           var t0 = data0[i].lastUpdated.split(/[- :]/);
+                           var t2 = data2[recordInd].lastUpdated.split(/[- :]/);
 
-                           var timeStampNode0 = new Date(data0[i].lastUpdated).getTime();
-                           var timeStampNode2 = new Date(data2[recordInd].lastUpdated).getTime();
-                           
+                           // Apply each element to the Date function
+                           var timeStampNode0 = new Date(t0[0], t0[1]-1, t0[2], t0[3], t0[4], t0[5]);
+                           var timeStampNode2 = new Date(t2[0], t2[1]-1, t2[2], t2[3], t2[4], t2[5]);
+
                            var indNodeToBeUpdated = 2
                            var query = `UPDATE movies SET title = "${data0[i].title}", lastUpdated = "${data0[i].lastUpdated}" WHERE id = ${data0[i].id}`
                            
                            if (timeStampNode2 > timeStampNode0) {
                               indNodeToBeUpdated = 0
-                              var query = `UPDATE movies SET title = "${data2[recordInd].title}" WHERE id = ${data2[recordInd].id}`
+                              query = `UPDATE movies SET title = "${data2[recordInd].title}", lastUpdated = "${data2[i].lastUpdated}" WHERE id = ${data2[recordInd].id}`
                            }
 
-                           console.log(query)
+                           
                            await db[indNodeToBeUpdated].query(query)
                            .then (() => {
                               console.log("updated node " + indNodeToBeUpdated)
@@ -799,7 +806,7 @@ async function reintegrate0and2() {
                      try{
                            // insert a new record in node 2
                            const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${data0[i].id}, "${data0[i].title}", ${data0[i].year}, ${data0[i].rating}, '${data0[i].genre}', '${data0[i].director}', '${data0[i].actor}', '${data1[i].lastUpdated}')`
-                           console.log(query)
+                           
                            await db[2].query(query)
                            .then (() => {
                            console.log("inserted to node 2")
@@ -835,7 +842,7 @@ async function reintegrate0and2() {
                         try{
                               // insert a new record in node 0
                               const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${data2[i].id}, "${data2[i].title}", ${data2[i].year}, ${data2[i].rating}, '${data2[i].genre}', '${data2[i].director}', '${data2[i].actor}','${data1[i].lastUpdated}')`
-                              console.log(query)
+                              
                               await db[0].query(query)
                               .then (() => {
                               console.log("inserted to node 0")
@@ -851,6 +858,7 @@ async function reintegrate0and2() {
                         }
                     }
                }
+               console.log("node 0 and  2 reintegrated")
 
 
 
@@ -863,7 +871,6 @@ async function reintegrate0and2() {
 
    }
 }
-
 function updateInNewMaster(id, year, oldTitle, newTitle, lastUpdated) {
    var transacNo;
    var slaveInd;
