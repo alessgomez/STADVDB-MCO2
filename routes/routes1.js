@@ -1145,7 +1145,7 @@ app.get('/', async (req, res) => {
          console.log("SETUP ERROR: " + error);
       }
       await recoverAll()
-      await clearAllLogs()
+      //await clearAllLogs()
       await reintegrateAll()
       .then (async res => {
          await db[1].beginTransaction();
