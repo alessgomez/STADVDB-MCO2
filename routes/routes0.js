@@ -619,6 +619,9 @@ async function reintegrate0and1() {
                               var t0 = data0[i].lastUpdated.split(/[- :]/);
                               var t1 = data1[recordInd].lastUpdated.split(/[- :]/);
                            } catch (error) {
+                              console.log("ERROR AFTER TRY 2 data0" + data0[i].lastUpdated)
+                              console.log("ERROR AFTER TRY 2 data1" + data1[recordInd].lastUpdated)
+                              
                               console.log("ERROR AFTER TRY 2" + error)
                            }
 
