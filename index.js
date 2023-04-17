@@ -6,7 +6,7 @@ const exphbs = require("express-handlebars")
 const flash = require('connect-flash');
 const routes = require('./routes/routes0.js')
 const mysql = require('mysql')
-
+const path = require('path') 
 app.set("view engine", "hbs")
 app.engine("hbs", exphbs.engine({extname: "hbs",  partialsDir: path.join(__dirname,  "/views/partials"),}))
 app.use(express.urlencoded({extended: true}))
