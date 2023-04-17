@@ -189,20 +189,13 @@ async function recover1(){
 
    try {
       // get max transaction number
-      console.log("before get max transaction no")
       const query = "SELECT MAX(transaction_no) AS maxTNo FROM log"
       await logDb[1].query(query)
       .then (data1 => {
-         console.log("max transaction no")
-         console.log(data1)
-         console.log(data1[0].maxTNo)
          maxTNo = data1[0].maxTNo
       })
       .then (result => {
-         console.log("hey there")
          // loop for each transaction no (Ti)
-         console.log(maxTNo)
-         console.log("before getting log")
          const query = "SELECT * FROM log"
          return logDb[1].query(query)
       })
@@ -211,7 +204,6 @@ async function recover1(){
          for (let j = 0; j <= maxTNo; j++)
          { 
             currTransactionNo = j
-            console.log("log for transaction no " + currTransactionNo + ": ")
             var currLogs = []
             var k = 0
             console.log("data2:")
@@ -875,7 +867,7 @@ async function reintegrate0and2() {
    }
 }
 
-function updateInNewMaster(id, year, oldTitle, newTitle) {
+function updateInNewMaster(id, year, oldTitle, newTitle, lastUpdated) {
    var transacNo;
    var slaveInd;
 
@@ -906,7 +898,7 @@ function updateInNewMaster(id, year, oldTitle, newTitle) {
    })
    .then(result => {
       console.log("555")
-      const query = `UPDATE movies SET title = '${newTitle}' WHERE id = ${id}`;
+      const query = `UPDATE movies SET title = '${newTitle}', lastUpdated = '${lastUpdated}' WHERE id = ${id}`;
       return query
    })
    .then(query => {
@@ -937,9 +929,8 @@ function updateInNewMaster(id, year, oldTitle, newTitle) {
    })
 }
 
-function insertInNewMaster(req) {
+function insertInNewMaster(req, lastUpdated) {
    var year = req.body.year;
-   console.log("INSERT NEW MASTER: " + year);
    if (year < 1980)
       slaveInd = 1;
    else 
@@ -966,7 +957,7 @@ function insertInNewMaster(req) {
    })
    .then(result => {
       console.log("555")
-      const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor) VALUES (${req.body.id}, '${req.body.title}', ${req.body.year}, ${req.body.rank}, '${req.body.genre}', '${req.body.director}', '${req.body.actor}')`
+      const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${req.body.id}, '${req.body.title}', ${req.body.year}, ${req.body.rank}, '${req.body.genre}', '${req.body.director}', '${req.body.actor}', '${lastUpdated}')`
       return query
    })
    .then(query => {
@@ -1142,12 +1133,19 @@ app.get('/search', async(req, res) => {
 
 app.post('/insertMovie', async(req, res) => {
    var year = req.body.year;
+   var lastUpdated;
    logDb[0].query("SELECT MAX(transaction_no) AS max FROM log")
    .then(result => {
       if (result[0].max == null)
          transacNo = 0
       else 
          transacNo = result[0].max + 1      
+   })
+   .then(result => {
+      var today = new Date();
+      var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+      var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+      lastUpdated = date+' '+time;
    })
    .then(result => {
       logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'START')`)
@@ -1164,8 +1162,7 @@ app.post('/insertMovie', async(req, res) => {
       }
    })
    .then(result => {
-      console.log("555")
-      const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor) VALUES (${req.body.id}, '${req.body.title}', ${req.body.year}, ${req.body.rank}, '${req.body.genre}', '${req.body.director}', '${req.body.actor}')`
+      const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${req.body.id}, '${req.body.title}', ${req.body.year}, ${req.body.rank}, '${req.body.genre}', '${req.body.director}', '${req.body.actor}', '${lastUpdated}')`
       return query
    })
    .then(query => {
@@ -1176,82 +1173,82 @@ app.post('/insertMovie', async(req, res) => {
       try {
          await db[0].query(query)
       } catch (error) {
-         console.log(error)
          await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
-         await insertInNewMaster(req);
+         await insertInNewMaster(req, lastUpdated);
          res.redirect("/addMovies")
          throw error
       }
    })
    .then(result => {
-      console.log("888")
       logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'COMMIT')`)
    })
-   .then(result => {
-      console.log("999")
-      db[0].commit()
-      .then(result => { //propagate update
-         console.log("year!! + " + year)
-         if (year < 1980)
-            slaveInd = 1;
-         else 
-            slaveInd = 2;
-         return slaveInd
-      })
-      .then(slaveInd => {
-         console.log("SLAVE INDEX!!!!   " + slaveInd)
-         return logDb[slaveInd].query("SELECT MAX(transaction_no) AS max FROM log")
-      })
-      .then(result => {
-         console.log(result[0].max +" !!!!! ")
-         if (result[0].max == null)
-            transacNo = 0
-         else 
-            transacNo = result[0].max + 1
-      })
-      .then(result => {
-         logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'START')`)
-      })
-      .then(async result => {
-         try {
-            await db[slaveInd].beginTransaction();
-         } catch(error) {
-            await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
-            throw error
-         }
-      })
-      .then(result => {
-         const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor) VALUES (${req.body.id}, '${req.body.title}', ${req.body.year}, ${req.body.rank}, '${req.body.genre}', '${req.body.director}', '${req.body.actor}')`
-         return query;
-      })
-      .then(query => {
-         logDb[slaveInd].query(`INSERT INTO log(transaction_no, row_no, query) VALUES (${transacNo}, ${req.body.id}, "${query}")`)
-         return query;
-      })
-      .then(async query => {
-         try {
-            await db[slaveInd].query(query)
-         } catch(error) {
-            await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
-            throw error
-         }
-      })
-      .then(result => {
-         logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'COMMIT')`) 
-      })
-      .then(async result => {
-         try {
-            await db[slaveInd].commit();
-         } catch(error) {
-            await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
-            throw error
-         }
-         
-      })
-      .then(result => {
+   .then(async result => {
+      try {
+         await db[0].commit();
+      } catch(error) {
+         await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+         await insertInNewMaster(req, lastUpdated);
          res.redirect("/addMovies")
-         
-      })
+         throw error
+      }
+   })
+   .then(result => { //propagate update
+      if (year < 1980)
+         slaveInd = 1;
+      else 
+         slaveInd = 2;
+      return slaveInd
+   })
+   .then(slaveInd => {
+      return logDb[slaveInd].query("SELECT MAX(transaction_no) AS max FROM log")
+   })
+   .then(result => {
+      if (result[0].max == null)
+         transacNo = 0
+      else 
+         transacNo = result[0].max + 1
+   })
+   .then(result => {
+      logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'START')`)
+   })
+   .then(async result => {
+      try {
+         await db[slaveInd].beginTransaction();
+      } catch(error) {
+         await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+         throw error
+      }
+   })
+   .then(result => {
+      const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${req.body.id}, '${req.body.title}', ${req.body.year}, ${req.body.rank}, '${req.body.genre}', '${req.body.director}', '${req.body.actor}', '${lastUpdated}')`
+      return query;
+   })
+   .then(query => {
+      logDb[slaveInd].query(`INSERT INTO log(transaction_no, row_no, query) VALUES (${transacNo}, ${req.body.id}, "${query}")`)
+      return query;
+   })
+   .then(async query => {
+      try {
+         await db[slaveInd].query(query)
+      } catch(error) {
+         await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+         throw error
+      }
+   })
+   .then(result => {
+      logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'COMMIT')`) 
+   })
+   .then(async result => {
+      try {
+         await db[slaveInd].commit();
+      } catch(error) {
+         await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
+         throw error
+      }
+      
+   })
+   .then(result => {
+      res.redirect("/addMovies")
    })
 }); 
 
@@ -1262,6 +1259,8 @@ app.post('/update/:id/:year/:title', async(req, res) => {
    var year = req.params.year;
    var id = req.params.id;
    var title = req.params.title;
+   var lastUpdated;
+
    logDb[0].query("SELECT MAX(transaction_no) AS max FROM log")
    .then(result => {
       console.log("111")
@@ -1269,6 +1268,12 @@ app.post('/update/:id/:year/:title', async(req, res) => {
          transacNo = 0
       else 
          transacNo = result[0].max + 1
+   })
+   .then(result => {
+      var today = new Date();
+      var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+      var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+      lastUpdated = date+' '+time;
    })
    .then(async result => {
       console.log("222")
@@ -1300,12 +1305,11 @@ app.post('/update/:id/:year/:title', async(req, res) => {
    })
    .then(result => {
       console.log("555")
-      const query = `UPDATE movies SET title = '${req.body.title}' WHERE id = ${req.params.id}`;
+      const query = `UPDATE movies SET title = '${req.body.title}', lastUpdated = '${lastUpdated}' WHERE id = ${req.params.id}`;
       return query
    })
    .then(query => {
       logDb[0].query(`INSERT INTO log(transaction_no, row_no, col_name, old_value, new_value, query) VALUES (${transacNo}, ${req.params.id}, 'title', '${oldTitle}', '${req.body.title}', "${query}")`)
-      //db[0].destroy()
       return query
    })
    .then(async query => {
@@ -1313,7 +1317,7 @@ app.post('/update/:id/:year/:title', async(req, res) => {
          await db[0].query(query)
       } catch (error) {
          await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
-         await updateInNewMaster(id, year, title, req.body.title);
+         await updateInNewMaster(id, year, title, req.body.title, lastUpdated);
          res.redirect("/")
          throw error
       }
@@ -1330,13 +1334,12 @@ app.post('/update/:id/:year/:title', async(req, res) => {
          await db[0].commit()
       } catch(error) {
          await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
-         await updateInNewMaster(id, year, title, req.body.title);
+         await updateInNewMaster(id, year, title, req.body.title, lastUpdated);
          res.redirect("/")
          throw error         
       }
    })
    .then(result => { //propagate update
-      console.log("year!! + " + year)
       if (year < 1980)
          slaveInd = 1;
       else 
@@ -1344,11 +1347,9 @@ app.post('/update/:id/:year/:title', async(req, res) => {
       return slaveInd
    })
    .then(slaveInd => {
-      console.log("SLAVE INDEX!!!!   " + slaveInd)
       return logDb[slaveInd].query("SELECT MAX(transaction_no) AS max FROM log")
    })
    .then(result => {
-      console.log(result[0].max +" !!!!! ")
       if (result[0].max == null)
          transacNo = 0
       else 
@@ -1366,7 +1367,7 @@ app.post('/update/:id/:year/:title', async(req, res) => {
       }
    })
    .then(result => {
-      const query = `UPDATE movies SET title = '${req.body.title}' WHERE id = ${req.params.id}`;
+      const query = `UPDATE movies SET title = '${req.body.title}', lastUpdated = '${lastUpdated}' WHERE id = ${req.params.id}`;
       return query;
    })
    .then(query => {
