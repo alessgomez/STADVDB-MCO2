@@ -77,7 +77,7 @@ async function recover0(){
                   k += 1
                }
             }
-            console.log("CURRLOGS DEBUG: " + currLogs[currLogs.length-1])
+            
             // if transaction no. has commit, push to redo
             if (currLogs[currLogs.length-1].query == "COMMIT")
                redo.push(currTransactionNo)
@@ -633,10 +633,18 @@ async function reintegrate0and1() {
                            var indNodeToBeUpdated = 1
                            var query = `UPDATE movies SET title = "${data0[i].title}", lastUpdated = "${data0[i].lastUpdated}" WHERE id = ${data0[i].id}`
                            
+
+
+                           console.log("REINTEG DEBUG 1(node0): " + data0[i].title)
+                           console.log("REINTEG DEBUG 2(node1): " + data1[recordInd].title)
                            if (timeStampNode1 > timeStampNode0) {
+                           
                               indNodeToBeUpdated = 0
                               query = `UPDATE movies SET title = "${data1[recordInd].title}", lastUpdated = "${data1[i].lastUpdated}"  WHERE id = ${data1[recordInd].id}`
+                         
                            }
+                           console.log("REINTEG DEBUG 3: " + indNodeToBeUpdated)
+                           console.log("REINTEG 4: " + query)
 
                            
                            await db[indNodeToBeUpdated].query(query)
