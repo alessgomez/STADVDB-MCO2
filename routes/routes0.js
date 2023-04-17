@@ -642,6 +642,10 @@ async function reintegrate0and1() {
                            var query = `UPDATE movies SET title = "${data0[i].title}", lastUpdated = "${data0[i].lastUpdated}" WHERE id = ${data0[i].id}`
 
                            // Split timestamp into [ Y, M, D, h, m, s ]
+
+
+                           console.log(new Date(data1[recordInd].lastUpdated.toString()))
+
                            try {
                               if (data1[recordInd].lastUpdated > data0[i].lastUpdated) {
                            
