@@ -431,7 +431,7 @@ async function recover2() {
             try {
                // select all logs with current transaction no.
                const query = "SELECT * FROM log WHERE transaction_no = " + undo[i]
-               console.log(query)
+               
                //console.log(logs)
                currTransactionNo = undo[i]
                console.log("log for transaction no " + currTransactionNo + ": ")
@@ -481,7 +481,7 @@ async function recover2() {
          {
             try {
                const query = "SELECT * FROM log WHERE transaction_no = " + redo[i]
-               console.log(query)
+               
                // get all logs with curerent transaction no
                currTransactionNo = redo[i]
                console.log("log for transaction no " + currTransactionNo + ": ")
@@ -633,7 +633,7 @@ async function reintegrate0and1() {
                               var query = `UPDATE movies SET title = "${data1[recordInd].title}" WHERE id = ${data1[recordInd].id}`
                            }
 
-                           console.log(query)
+                           
                            await db[indNodeToBeUpdated].query(query)
                            .then (() => {
                               console.log("updated node " + indNodeToBeUpdated)
@@ -655,7 +655,7 @@ async function reintegrate0and1() {
                      try{
                            // insert a new record in node 1
                            const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${data0[i].id}, "${data0[i].title}", ${data0[i].year}, ${data0[i].rating}, '${data0[i].genre}', '${data0[i].director}', '${data0[i].actor}', '${data0[i].lastUpdated}')`
-                           console.log(query)
+                           
                            await db[1].query(query)
                            .then (() => {
                            console.log("inserted to node 1")
@@ -690,7 +690,7 @@ async function reintegrate0and1() {
                         try{
                               // insert a new record in node 0
                               const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${data1[i].id}, "${data1[i].title}", ${data1[i].year}, ${data1[i].rating}, '${data1[i].genre}', '${data1[i].director}', '${data1[i].actor}', '${data1[i].lastUpdated}')`
-                              console.log(query)
+                              
                               await db[0].query(query)
                               .then (() => {
                               console.log("inserted to node 0")
@@ -778,7 +778,7 @@ async function reintegrate0and2() {
                               var query = `UPDATE movies SET title = "${data2[recordInd].title}" WHERE id = ${data2[recordInd].id}`
                            }
 
-                           console.log(query)
+                           
                            await db[indNodeToBeUpdated].query(query)
                            .then (() => {
                               console.log("updated node " + indNodeToBeUpdated)
@@ -803,7 +803,7 @@ async function reintegrate0and2() {
                      try{
                            // insert a new record in node 2
                            const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${data0[i].id}, "${data0[i].title}", ${data0[i].year}, ${data0[i].rating}, '${data0[i].genre}', '${data0[i].director}', '${data0[i].actor}', '${data1[i].lastUpdated}')`
-                           console.log(query)
+                           
                            await db[2].query(query)
                            .then (() => {
                            console.log("inserted to node 2")
@@ -839,7 +839,7 @@ async function reintegrate0and2() {
                         try{
                               // insert a new record in node 0
                               const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${data2[i].id}, "${data2[i].title}", ${data2[i].year}, ${data2[i].rating}, '${data2[i].genre}', '${data2[i].director}', '${data2[i].actor}','${data1[i].lastUpdated}')`
-                              console.log(query)
+                              
                               await db[0].query(query)
                               .then (() => {
                               console.log("inserted to node 0")
