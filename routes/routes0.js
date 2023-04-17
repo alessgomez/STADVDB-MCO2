@@ -653,7 +653,7 @@ async function reintegrate0and1() {
                               indNodeToBeUpdated = 0
                               query = `UPDATE movies SET title = "${data1[recordInd].title}", lastUpdated = "${data1[i].lastUpdated}"  WHERE id = ${data1[recordInd].id}`
                            }
-                           else if (data1[recordInd].lastUpdated > data0[i].lastUpdated) {
+                           else if (Date.parse(data1[recordInd].lastUpdated) > Date.parse(data0[i].lastUpdated)) {
                            
                               indNodeToBeUpdated = 0
                               query = `UPDATE movies SET title = "${data1[recordInd].title}", lastUpdated = "${data1[i].lastUpdated}"  WHERE id = ${data1[recordInd].id}`
@@ -674,7 +674,7 @@ async function reintegrate0and1() {
                            console.log("REINTEG DEBUG 1(node0): " + data0[i].lastUpdated)
                            console.log("REINTEG DEBUG 2(node1): " + data1[recordInd].lastUpdated)
                           
-                           if (data0[i].lastUpdated > data1[recordInd].lastUpdated)
+                           if (Date.parse(data0[i].lastUpdated) > Date.parse(data1[recordInd].lastUpdated))
                               console.log("node 0 greater than node 1")
                            else
                               console.log("node 1 greater than node 0")
