@@ -525,6 +525,43 @@ async function recover2() {
    }
 }
 
+async function clearLog0() {
+   try {
+      const query = "DELETE FROM log" 
+      await logDb[0].query(query)
+   }catch (error)
+   {
+      console.log(error)
+   }
+   
+}
+
+async function clearLog1() {
+   try {
+      const query = "DELETE FROM log" 
+      await logDb[1].query(query)
+   }catch (error)
+   {
+      console.log(error)
+   }
+}
+
+async function clearLog2() {
+   try {
+      const query = "DELETE FROM log" 
+      await logDb[2].query(query)
+   }catch (error)
+   {
+      console.log(error)
+   }
+}
+
+async function clearAllLogs() {
+   await clearLog0();
+   await clearLog1();
+   await clearLog2();
+}
+
 async function recoverAll() {
    await recover0();
    await recover1();
@@ -963,6 +1000,7 @@ function insertInNewMaster(req) {
 app.get('/', async (req, res) => {
    try { 
       await recoverAll()
+      await clearAllLogs()
       await reintegrateAll()
       .then (async res => {
          await db[1].beginTransaction();
