@@ -1213,6 +1213,8 @@ app.post('/insertMovie', async(req, res) => {
    })
    .then(async result => {
       try {
+         db[0].destroy()
+         ctr0 = 1
          await db[0].commit();
       } catch(error) {
          await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
@@ -1271,6 +1273,7 @@ app.post('/insertMovie', async(req, res) => {
    })
    .then(async result => {
       try {
+         
          await db[slaveInd].commit();
       } catch(error) {
          await logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
