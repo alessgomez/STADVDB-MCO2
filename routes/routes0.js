@@ -79,12 +79,19 @@ async function recover0(){
                   k += 1
                }
             }
+
+            var hasCommit = false
+            for (let m = 0; m < currLogs.length; m++)
+            {
+               if (currLogs[m].query == "COMMIT")
+                  hasCommit = true
+            }
             
             // if transaction no. has commit, push to redo
-            if (currLogs[currLogs.length-1].query == "COMMIT")
+            if (hasCommit)
                redo.push(currTransactionNo)
             // else push to undo if last log is not abort
-            else if (currLogs[currLogs.length-1].query != "ABORT")
+            else 
                undo.push(currTransactionNo)
                  
          }
