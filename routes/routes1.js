@@ -1203,7 +1203,6 @@ app.post('/insertMovie', async(req, res) => {
       logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'START')`)
    })
    .then(async result => {
-      console.log("444")
       try {
          await db[0].beginTransaction();
       } catch(error) {
@@ -1278,6 +1277,7 @@ app.post('/insertMovie', async(req, res) => {
    })
    .then(query => {
       logDb[slaveInd].query(`INSERT INTO log(transaction_no, row_no, query) VALUES (${transacNo}, ${req.body.id}, "${query}")`)
+      //test recovery: db[slaveInd].destroy()
       return query;
    })
    .then(async query => {
@@ -1428,6 +1428,7 @@ app.post('/update/:id/:year/:title', async(req, res) => {
    })
    .then(query => {
       logDb[slaveInd].query(`INSERT INTO log(transaction_no, row_no, col_name, old_value, new_value, query) VALUES (${transacNo}, ${req.params.id}, 'title', '${oldTitle}', '${req.body.title}', "${query}")`)
+      //test recovery: db[slaveInd].destroy()
       return query;
    })
    .then(async query => {
