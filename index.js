@@ -8,9 +8,10 @@ const routes = require('./routes/routes0.js')
 const mysql = require('mysql')
 
 app.set("view engine", "hbs")
-app.engine("hbs", exphbs.engine({extname: "hbs"}))
+app.engine("hbs", exphbs.engine({extname: "hbs",  partialsDir: path.join(__dirname,  "/views/partials"),}))
 app.use(express.urlencoded({extended: true}))
 app.use(express.static("public"))
+
 
 /*
 var con = mysql.createConnection({
