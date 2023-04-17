@@ -1087,7 +1087,7 @@ app.get('/search', async(req, res) => {
             .then(async data2 => {
             await db[2].commit();
             var data = await data1.concat(data2)
-            res.render('partials\\rows', data, function(err, html) {
+            res.render('partials/rows', data, function(err, html) {
                if (err)
                {
                    throw err;
@@ -1104,7 +1104,7 @@ app.get('/search', async(req, res) => {
                .then(async data2 => {
                await db[0].commit();
                var data = await data1.concat(data2)
-               res.render('partials\\rows', data, function(err, html) {
+               res.render('partials/rows', data, function(err, html) {
                   if (err)
                   {
                       throw err;
@@ -1114,7 +1114,7 @@ app.get('/search', async(req, res) => {
               });
             })
             } catch (error) { //node 0 cannot begin transac, only from node1
-               res.render('partials\\rows', data1, function(err, html) {
+               res.render('partials/rows', data1, function(err, html) {
                   if (err)
                   {
                       throw err;
@@ -1132,7 +1132,7 @@ app.get('/search', async(req, res) => {
          db[0].query(query)
          .then(async data => {
          await db[0].commit();
-         res.render('partials\\rows', data, function(err, html) {
+         res.render('partials/rows', data, function(err, html) {
             if (err)
             {
                 throw err;
@@ -1148,7 +1148,7 @@ app.get('/search', async(req, res) => {
             db[2].query(query)
             .then(async data => {
             await db[2].commit();
-            res.render('partials\\rows', data, function(err, html) {
+            res.render('partials/rows', data, function(err, html) {
                if (err)
                {
                    throw err;
@@ -1158,7 +1158,7 @@ app.get('/search', async(req, res) => {
          })
          } catch (error) { //node 0 cannot begin transac, cannot search
             var data = [];
-            res.render('partials\\rows', data, function(err, html) {
+            res.render('partials/rows', data, function(err, html) {
                if (err)
                {
                    throw err;
@@ -1461,7 +1461,7 @@ app.get('/generateReport', async(req, res) => {
          console.log(data)
          console.log("iscount: "  +isCount)
          console.log("isAverage: " + isAverage)
-         res.render('partials\\reportRows', results, function(err, html) {
+         res.render('partials/reportRows', results, function(err, html) {
             if (err)
             {
                 throw err;
@@ -1497,7 +1497,7 @@ app.get('/generateReport', async(req, res) => {
                      isCount: isCount,
                      isAverage: isAverage
                   }
-                  res.render('partials\\reportRows', results, function(err, html) {
+                  res.render('partials/reportRows', results, function(err, html) {
                      if (err)
                      {
                          throw err;
@@ -1532,7 +1532,7 @@ app.get('/generateReport', async(req, res) => {
                   isCount: isCount,
                   isAverage: isAverage
                }
-               res.render('partials\\reportRows', results, function(err, html) {
+               res.render('partials/reportRows', results, function(err, html) {
                   if (err)
                   {
                       throw err;
