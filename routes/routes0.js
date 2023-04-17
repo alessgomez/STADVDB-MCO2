@@ -619,22 +619,17 @@ async function reintegrate0and1() {
 
                            // Split timestamp into [ Y, M, D, h, m, s ]
                            try {
-                              var t0 = data0[i].lastUpdated.split(/[- :]/);
-                              var t1 = data1[recordInd].lastUpdated.split(/[- :]/);
-                              var timeStampNode0 = new Date(t0[0], t0[1]-1, t0[2], t0[3], t0[4], t0[5]);
-                              var timeStampNode1 = new Date(t1[0], t1[1]-1, t1[2], t1[3], t1[4], t1[5]);
-                              if (timeStampNode1 > timeStampNode0) {
+                              if (data1[recordInd].lastUpdated > data0[i].lastUpdated) {
                            
                                  indNodeToBeUpdated = 0
                                  query = `UPDATE movies SET title = "${data1[recordInd].title}", lastUpdated = "${data1[i].lastUpdated}"  WHERE id = ${data1[recordInd].id}`
-                            
                               }
                            } catch (error) {
                               console.log("ERROR AFTER TRY 2 data0" + data0[i].lastUpdated)
                               console.log("ERROR AFTER TRY 2 data1" + data1[recordInd].lastUpdated)
                               console.log("ERROR AFTER TRY 2" + error)
 
-                              if (t0 == null)
+                              if (data0[i].lastUpdated == null && data1[recordInd] != null)
                               {
                                  indNodeToBeUpdated = 0
                                  query = `UPDATE movies SET title = "${data1[recordInd].title}", lastUpdated = "${data1[i].lastUpdated}"  WHERE id = ${data1[recordInd].id}`
@@ -797,25 +792,22 @@ async function reintegrate0and2() {
                            var query = `UPDATE movies SET title = "${data0[i].title}", lastUpdated = "${data0[i].lastUpdated}" WHERE id = ${data0[i].id}`
 
                            try {
-                               // Split timestamp into [ Y, M, D, h, m, s ]
-                              var t0 = data0[i].lastUpdated.split(/[- :]/);
-                              var t2 = data2[recordInd].lastUpdated.split(/[- :]/);
-
-                              // Apply each element to the Date function
-                              var timeStampNode0 = new Date(t0[0], t0[1]-1, t0[2], t0[3], t0[4], t0[5]);
-                              var timeStampNode2 = new Date(t2[0], t2[1]-1, t2[2], t2[3], t2[4], t2[5]);
-                                  
-                              if (timeStampNode2 > timeStampNode0) {
+                              if (data2[recordInd].lastUpdated > data0[i].lastUpdated) {
+                           
                                  indNodeToBeUpdated = 0
-                                 query = `UPDATE movies SET title = "${data2[recordInd].title}", lastUpdated = "${data2[i].lastUpdated}" WHERE id = ${data2[recordInd].id}`
+                                 query = `UPDATE movies SET title = "${data2[recordInd].title}", lastUpdated = "${data2[i].lastUpdated}"  WHERE id = ${data2[recordInd].id}`
                               }
-                           }catch (error) {
-                              if (t0 == null)
+                           } catch (error) {
+                              console.log("ERROR AFTER TRY 2 data0" + data0[i].lastUpdated)
+                              console.log("ERROR AFTER TRY 2 data1" + data2[recordInd].lastUpdated)
+                              console.log("ERROR AFTER TRY 2" + error)
+
+                              if (data0[i].lastUpdated == null && data2[recordInd] != null)
                               {
                                  indNodeToBeUpdated = 0
-                                 query = `UPDATE movies SET title = "${data2[recordInd].title}", lastUpdated = "${data2[i].lastUpdated}" WHERE id = ${data2[recordInd].id}`
+                                 query = `UPDATE movies SET title = "${data2[recordInd].title}", lastUpdated = "${data2[i].lastUpdated}"  WHERE id = ${data2[recordInd].id}`
                               }
-                              
+
                            }
                                                 
                           
