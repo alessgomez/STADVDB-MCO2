@@ -8,7 +8,9 @@ const db = [];
 const logDb = [];
 var mysql = require('mysql');
 const bluebird = require('bluebird');
-var ctr = 0;
+var ctr0 = 0;
+var ctr1 = 0;
+var ctr2 = 0;
 
 [db[0], db[1], db[2], logDb[0], logDb[1], logDb[2]] = require("../database")
 
@@ -1499,14 +1501,62 @@ app.get('/updateMovies/:id/:year/:title', async(req, res) => {
    res.render("UpdateMovies", data)
 }); 
 
-app.get('/toggle', async(req, res) => {
-   if (ctr ==0)
+app.get('/toggle0', async(req, res) => {
+   if (ctr0 ==0)
    {
-      ctr = 1;
+      ctr0 = 1;
+      db[0].destroy()
+   }
+   else {
+      ctr0 = 0
+      db[0]= mysql.createConnection({
+         host: "172.16.3.121",
+         user: "group11",
+         password: "group11",
+         database: "mco2_imdb"
+      });
+      
+      db[0].connect(function(err) {
+         if (err) throw err;
+         console.log("Db 0 Connected!");
+      });
+      db[0].query = bluebird.promisify(db[0].query);
+   }
+   res.redirect("/")
+}); 
+
+app.get('/toggle1', async(req, res) => {
+   if (ctr1 ==0)
+   {
+      ctr1 = 1;
+      db[1].destroy()
+   }
+   else {
+      ctr1 = 0
+      db[1]= mysql.createConnection({
+         host: "172.16.3.122",
+         user: "group11",
+         password: "group11",
+         database: "mco2_imdb"
+      });
+      
+      db[1].connect(function(err) {
+         if (err) throw err;
+         console.log("Db 1 Connected!");
+      });
+      db[1].query = bluebird.promisify(db[1].query);
+   }
+   res.redirect("/")
+}); 
+
+app.get('/toggle2', async(req, res) => {
+   if (ctr2 ==0)
+   {
+      ctr2 = 1;
       db[2].destroy()
    }
    else {
-      ctr = 0
+      ctr2 = 0
       db[2]= mysql.createConnection({
          host: "172.16.3.123",
          user: "group11",
@@ -1516,7 +1566,7 @@ app.get('/toggle', async(req, res) => {
       
       db[2].connect(function(err) {
          if (err) throw err;
-         console.log("Db 1 Connected!");
+         console.log("Db 2 Connected!");
       });
       db[2].query = bluebird.promisify(db[2].query);
    }
