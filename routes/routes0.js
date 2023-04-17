@@ -1009,8 +1009,8 @@ app.get('/', async (req, res) => {
          console.log("SETUP ERROR: " + error);
       }
       
-      await recoverAll()
-      await clearAllLogs()
+      //await recoverAll()
+      //await clearAllLogs()
       await reintegrateAll()
       .then (async res => {
          console.log("reintegration should be done")
