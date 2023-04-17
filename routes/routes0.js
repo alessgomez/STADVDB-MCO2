@@ -601,7 +601,7 @@ async function reintegrate0and1() {
                      try{
                            // update node 1 with the values from node 0
                            // find in data1 the record that matches with data0[i]
-                           console.log("PUMASOK SA TRY ");
+                           console.log("PUMASOK SA TRY 1");
                            var found = false
                            var recordInd = 0
                            while(!found)
@@ -611,21 +611,21 @@ async function reintegrate0and1() {
                               else
                                  recordInd++
                            }
+                           console.log("PUMASOK SA TRY 2");
 
-
-                     
+                           
                            // Split timestamp into [ Y, M, D, h, m, s ]
                            var t0 = data0[i].lastUpdated.split(/[- :]/);
                            var t1 = data1[recordInd].lastUpdated.split(/[- :]/);
-
+                           console.log("PUMASOK SA TRY 3");
                            // Apply each element to the Date function
                            var timeStampNode0 = new Date(t0[0], t0[1]-1, t0[2], t0[3], t0[4], t0[5]);
                            var timeStampNode1 = new Date(t1[0], t1[1]-1, t1[2], t1[3], t1[4], t1[5]);
-                           
+                           console.log("PUMASOK SA TRY 4");
                            var indNodeToBeUpdated = 1
                            var query = `UPDATE movies SET title = "${data0[i].title}", lastUpdated = "${data0[i].lastUpdated}" WHERE id = ${data0[i].id}`
                            
-
+                           console.log("PUMASOK SA TRY 5");
 
                            console.log("REINTEG DEBUG 1(node0): " + data0[i].title)
                            console.log("REINTEG DEBUG 2(node1): " + data1[recordInd].title)
