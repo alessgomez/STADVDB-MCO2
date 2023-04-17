@@ -1034,7 +1034,7 @@ app.get('/', async (req, res) => {
       }
       
       await recoverAll()
-      await clearAllLogs()
+      //await clearAllLogs()
       await reintegrateAll()
       .then (async res => {
          console.log("reintegration should be done")
