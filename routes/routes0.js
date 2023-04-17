@@ -677,7 +677,7 @@ async function reintegrate0and1() {
                            if (data0[i].lastUpdated > data1[recordInd].lastUpdated)
                               console.log("node 0 greater than node 1")
                            else
-                           console.log("node 1 greater than node 0")
+                              console.log("node 1 greater than node 0")
                            console.log("REINTEG DEBUG 3: " + indNodeToBeUpdated)
                            console.log("REINTEG 4: " + query)
 
@@ -1345,7 +1345,7 @@ app.post('/update/:id/:year/:title', async(req, res) => {
          return result
       } catch (error) {
          await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
-         await updateInNewMaster(id, year, title, req.body.title);
+         await updateInNewMaster(id, year, title, req.body.title, lastUpdated);
          res.redirect("/")
          throw error         
       }
@@ -1361,7 +1361,7 @@ app.post('/update/:id/:year/:title', async(req, res) => {
          await db[0].beginTransaction();
       } catch(error) {
          await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
-         await updateInNewMaster(id, year, title, req.body.title);
+         await updateInNewMaster(id, year, title, req.body.title, lastUpdated);
          res.redirect("/")
          throw error
       }
