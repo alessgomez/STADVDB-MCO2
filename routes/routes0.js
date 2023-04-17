@@ -599,7 +599,6 @@ async function reintegrate0and1() {
                   // if node 1 already has a record corresponding to the current movie from node 0
                   if (colId1.includes(data0[i].id))
                   {
-                     console.log("includes")
                      try{
                            // update node 1 with the values from node 0
                            // find in data1 the record that matches with data0[i]
@@ -687,7 +686,6 @@ async function reintegrate0and1() {
 
                     if (!colId0.includes(data1[i].id))
                     {
-                        console.log("does not include")
                         try{
                               // insert a new record in node 0
                               const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${data1[i].id}, "${data1[i].title}", ${data1[i].year}, ${data1[i].rating}, '${data1[i].genre}', '${data1[i].director}', '${data1[i].actor}', '${data1[i].lastUpdated}')`
@@ -749,12 +747,9 @@ async function reintegrate0and2() {
                      colId2[j] = data2[j].id
                   }
                 
-                  //console.log(colId)
-                  console.log("i: " + i)
                   // if node 2 already has a record corresponding to the current movie from node 0
                   if (colId2.includes(data0[i].id))
                   {
-                     console.log("includes")
                      try{
                            // update node 2 with the values from node 0
                            // find in data2 the record that matches with data0[i]
