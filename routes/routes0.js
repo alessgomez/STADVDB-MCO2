@@ -60,6 +60,8 @@ async function recover0(){
          return logDb[0].query(query)
       })
       .then (data2 => {
+         console.log("all node 0 logs:")
+         console.log(data2)
          logs = data2
          for (let j = 0; j <= maxTNo; j++)
          { 
