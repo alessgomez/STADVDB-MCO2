@@ -1080,10 +1080,9 @@ app.get('/search', async(req, res) => {
       db[1].query(query)
       .then(async data1 => {
          await db[1].commit();
-
          try {
             await db[2].beginTransaction();
-            const query = `SELECT * FROM movies WHERE ${req.query.attribute} = "${req.query.value}" ORDER BY year`
+            const query = `SELECT * FROM movies WHERE ${req.query.attribute} = '${req.query.value}' ORDER BY year`
             db[2].query(query)
             .then(async data2 => {
             await db[2].commit();
@@ -1100,7 +1099,7 @@ app.get('/search', async(req, res) => {
             console.log(error)
             try {
                await db[0].beginTransaction();
-               const query = `SELECT * FROM movies WHERE ${req.query.attribute} = ${req.query.value} AND year > 1980 ORDER BY year`
+               const query = `SELECT * FROM movies WHERE ${req.query.attribute} = '${req.query.value}' AND year > 1980 ORDER BY year`
                db[0].query(query)
                .then(async data2 => {
                await db[0].commit();
@@ -1114,8 +1113,8 @@ app.get('/search', async(req, res) => {
                   res.send(html);
               });
             })
-            } catch (error) { //node 0 cannot begin transac, cannot search
-               res.render('partials\\rows', data, function(err, html) {
+            } catch (error) { //node 0 cannot begin transac, only from node1
+               res.render('partials\\rows', data1, function(err, html) {
                   if (err)
                   {
                       throw err;
@@ -1129,7 +1128,7 @@ app.get('/search', async(req, res) => {
    } catch (error) { //node 1 cannot begin transac, search in node 0
       try {
          await db[0].beginTransaction();
-         const query = `SELECT * FROM movies WHERE ${req.query.attribute} = "${req.query.value}" ORDER BY year`
+         const query = `SELECT * FROM movies WHERE ${req.query.attribute} = '${req.query.value}' ORDER BY year`
          db[0].query(query)
          .then(async data => {
          await db[0].commit();
@@ -1145,7 +1144,7 @@ app.get('/search', async(req, res) => {
          console.log(error)
          try {
             await db[2].beginTransaction();
-            const query = `SELECT * FROM movies WHERE ${req.query.attribute} = ${req.query.value} ORDER BY year`
+            const query = `SELECT * FROM movies WHERE ${req.query.attribute} = '${req.query.value}' ORDER BY year`
             db[2].query(query)
             .then(async data => {
             await db[2].commit();
@@ -1158,6 +1157,7 @@ app.get('/search', async(req, res) => {
            });
          })
          } catch (error) { //node 0 cannot begin transac, cannot search
+            var data = [];
             res.render('partials\\rows', data, function(err, html) {
                if (err)
                {
