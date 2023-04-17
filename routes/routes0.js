@@ -652,7 +652,11 @@ async function reintegrate0and1() {
 
                            console.log("REINTEG DEBUG 1(node0): " + data0[i].title)
                            console.log("REINTEG DEBUG 2(node1): " + data1[recordInd].title)
+
+                           console.log("REINTEG DEBUG 1(node0): " + data0[i].lastUpdated)
+                           console.log("REINTEG DEBUG 2(node1): " + data1[recordInd].lastUpdated)
                           
+
                            console.log("REINTEG DEBUG 3: " + indNodeToBeUpdated)
                            console.log("REINTEG 4: " + query)
 
