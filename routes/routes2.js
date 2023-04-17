@@ -615,21 +615,15 @@ async function reintegrate0and1() {
                            }
 
 
-                           // Split timestamp into [ Y, M, D, h, m, s ]
-                           var t = data0[i].lastUpdated.split(/[- :]/);
-
-                           // Apply each element to the Date function
-                           var timeStampNode0 = new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5]);
-
-                           var t1 = data1[recordInd].lastUpdated.split(/[- :]/);
-                           var timeStampNode1 = new Date(t1[0], t1[1]-1, t1[2], t1[3], t1[4], t1[5]);
+                           var timeStampNode0 = new Date(data0[i].lastUpdated).getTime();
+                           var timeStampNode1 = new Date(data1[recordInd].lastUpdated).getTime();
                            
                            var indNodeToBeUpdated = 1
                            var query = `UPDATE movies SET title = "${data0[i].title}", lastUpdated = "${data0[i].lastUpdated}" WHERE id = ${data0[i].id}`
                            
                            if (timeStampNode1 > timeStampNode0) {
                               indNodeToBeUpdated = 0
-                              query = `UPDATE movies SET title = "${data1[recordInd].title}", lastUpdated = "${data1[recordInd].lastUpdated}" WHERE id = ${data1[recordInd].id}`
+                              var query = `UPDATE movies SET title = "${data1[recordInd].title}" WHERE id = ${data1[recordInd].id}`
                            }
 
                            console.log(query)
@@ -769,21 +763,15 @@ async function reintegrate0and2() {
                            }
 
 
-                           // Split timestamp into [ Y, M, D, h, m, s ]
-                           var t = data0[i].lastUpdated.split(/[- :]/);
-
-                           // Apply each element to the Date function
-                           var timeStampNode0 = new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5]);
-
-                           var t2 = data2[recordInd].lastUpdated.split(/[- :]/);
-                           var timeStampNode2 = new Date(t2[0], t2[1]-1, t2[2], t2[3], t2[4], t2[5]);
+                           var timeStampNode0 = new Date(data0[i].lastUpdated).getTime();
+                           var timeStampNode2 = new Date(data2[recordInd].lastUpdated).getTime();
                            
                            var indNodeToBeUpdated = 2
                            var query = `UPDATE movies SET title = "${data0[i].title}", lastUpdated = "${data0[i].lastUpdated}" WHERE id = ${data0[i].id}`
                            
                            if (timeStampNode2 > timeStampNode0) {
                               indNodeToBeUpdated = 0
-                              query = `UPDATE movies SET title = "${data2[recordInd].title}", lastUpdated = "${data2[recordInd].lastUpdated}" WHERE id = ${data2[recordInd].id}`
+                              var query = `UPDATE movies SET title = "${data2[recordInd].title}" WHERE id = ${data2[recordInd].id}`
                            }
 
                            console.log(query)

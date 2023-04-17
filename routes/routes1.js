@@ -628,7 +628,7 @@ async function reintegrate0and1() {
                            
                            if (timeStampNode1 > timeStampNode0) {
                               indNodeToBeUpdated = 0
-                              query = `UPDATE movies SET title = "${data1[recordInd].title}", lastUpdated = "${data1[recordInd].lastUpdated}" WHERE id = ${data1[recordInd].id}`
+                              var query = `UPDATE movies SET title = "${data1[recordInd].title}" WHERE id = ${data1[recordInd].id}`
                            }
 
                            console.log(query)
@@ -782,7 +782,7 @@ async function reintegrate0and2() {
                            
                            if (timeStampNode2 > timeStampNode0) {
                               indNodeToBeUpdated = 0
-                              query = `UPDATE movies SET title = "${data2[recordInd].title}", lastUpdated = "${data2[recordInd].lastUpdated}" WHERE id = ${data2[recordInd].id}`
+                              var query = `UPDATE movies SET title = "${data2[recordInd].title}" WHERE id = ${data2[recordInd].id}`
                            }
 
                            console.log(query)
