@@ -1211,10 +1211,10 @@ app.post('/insertMovie', async(req, res) => {
    .then(result => {
       logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'COMMIT')`)
       console.log("commit added to db")
+      db[0].destroy()
    })
    .then(async result => {
       try {
-         db[0].destroy()
          ctr0 = 1
          console.log("db connection destroyed before commit")
          await db[0].commit();
