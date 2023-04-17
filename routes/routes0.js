@@ -15,7 +15,7 @@ var ctr2 = 0;
 [db[0], db[1], db[2], logDb[0], logDb[1], logDb[2]] = require("../database")
 
 async function setUpMySQL() {
-   var query1 = "SET PERSIST innodb_lock_wait_timeout = 120"
+   var query1 = "SET PERSIST innodb_lock_wait_timeout = 10"
    var query2 = "SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED"
    await db[0].query(query1)
    await db[1].query(query1)
@@ -1003,7 +1003,12 @@ function insertInNewMaster(req, lastUpdated) {
 app.get('/', async (req, res) => {
    try { 
       //await setUpMySQL()
-      await recoverAll()
+      try {
+         await recoverAll()
+      } catch(error) {
+         console.log("SETUP ERROR: " + error);
+      }
+      
       await clearAllLogs()
       await reintegrateAll()
       .then (async res => {
