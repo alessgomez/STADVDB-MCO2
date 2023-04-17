@@ -102,7 +102,7 @@ async function recover0(){
             try {
                // select all logs with current transaction no.
                const query = "SELECT * FROM log WHERE transaction_no = " + undo[i]
-               console.log(query)
+
                //console.log(logs)
                currTransactionNo = undo[i]
                console.log("log for transaction no " + currTransactionNo + ": ")
@@ -152,7 +152,7 @@ async function recover0(){
          {
             try {
                const query = "SELECT * FROM log WHERE transaction_no = " + redo[i]
-               console.log(query)
+
                // get all logs with curerent transaction no
                currTransactionNo = redo[i]
                console.log("log for transaction no " + currTransactionNo + ": ")
@@ -257,7 +257,7 @@ async function recover1(){
             try {
                // select all logs with current transaction no.
                const query = "SELECT * FROM log WHERE transaction_no = " + undo[i]
-               console.log(query)
+
                //console.log(logs)
                currTransactionNo = undo[i]
                console.log("log for transaction no " + currTransactionNo + ": ")
@@ -307,7 +307,7 @@ async function recover1(){
          {
             try {
                const query = "SELECT * FROM log WHERE transaction_no = " + redo[i]
-               console.log(query)
+
                // get all logs with curerent transaction no
                currTransactionNo = redo[i]
                console.log("log for transaction no " + currTransactionNo + ": ")
@@ -1060,7 +1060,7 @@ app.get('/search', async(req, res) => {
    try {
       await db[0].beginTransaction();
       const query = `SELECT * FROM movies WHERE ${req.query.attribute} = '${req.query.value}' ORDER BY year`
-      console.log(query)
+
       db[0].query(query)
       .then(async data => {
          await db[0].commit();
