@@ -1211,7 +1211,7 @@ app.post('/insertMovie', async(req, res) => {
          await db[0].beginTransaction();
       } catch(error) {
          await logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'ABORT')`)
-         await insertInNewMaster(req);
+         await insertInNewMaster(req, lastUpdated);
          res.redirect("/addMovies")
          throw error
       }
