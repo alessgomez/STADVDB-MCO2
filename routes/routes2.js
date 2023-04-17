@@ -168,11 +168,7 @@ async function recover0(){
                   console.log("currLog: " + currLogs[k])
                   try {
                      // restore the old values
-                     var query2 = ""
-                     if (currLogs[k].new_value != null)
-                        query2 = `UPDATE movies SET ${currLogs[k].col_name} = '${currLogs[k].new_value}' WHERE id = ${currLogs[k].row_no}`;
-                     else  
-                        query2 = currLogs[k].query
+                     const query2 = currLogs[k].query
                      console.log("query: " + query2)
                      db[0].query(query2)
                      console.log("after query")
@@ -327,11 +323,7 @@ async function recover1(){
                   console.log("currLog: " + currLogs[k])
                   try {
                      // restore the old values
-                     var query2 = ""
-                     if (currLogs[k].new_value != null)
-                        query2 = `UPDATE movies SET ${currLogs[k].col_name} = '${currLogs[k].new_value}' WHERE id = ${currLogs[k].row_no}`;
-                     else  
-                        query2 = currLogs[k].query
+                     const query2 = currLogs[k].query
                      console.log("query: " + query2)
                      db[1].query(query2)
                      console.log("after query")
@@ -505,11 +497,7 @@ async function recover2() {
                   console.log("currLog: " + currLogs[k])
                   try {
                      // restore the old values
-                     var query2 = ""
-                     if (currLogs[k].new_value != null)
-                        query2 = `UPDATE movies SET ${currLogs[k].col_name} = '${currLogs[k].new_value}' WHERE id = ${currLogs[k].row_no}`;
-                     else  
-                        query2 = currLogs[k].query
+                     const query2 = currLogs[k].query
                      console.log("query: " + query2)
                      db[2].query(query2)
                      console.log("after query")
@@ -627,8 +615,14 @@ async function reintegrate0and1() {
                            }
 
 
-                           var timeStampNode0 = new Date(data0[i].lastUpdated).getTime();
-                           var timeStampNode1 = new Date(data1[recordInd].lastUpdated).getTime();
+                           // Split timestamp into [ Y, M, D, h, m, s ]
+                           var t = data0[i].lastUpdated.split(/[- :]/);
+
+                           // Apply each element to the Date function
+                           var timeStampNode0 = new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5]);
+
+                           var t1 = data1[recordInd].lastUpdated.split(/[- :]/);
+                           var timeStampNode1 = new Date(t1[0], t1[1]-1, t1[2], t1[3], t1[4], t1[5]);
                            
                            var indNodeToBeUpdated = 1
                            var query = `UPDATE movies SET title = "${data0[i].title}" WHERE id = ${data0[i].id}`
@@ -775,8 +769,14 @@ async function reintegrate0and2() {
                            }
 
 
-                           var timeStampNode0 = new Date(data0[i].lastUpdated).getTime();
-                           var timeStampNode2 = new Date(data2[recordInd].lastUpdated).getTime();
+                           // Split timestamp into [ Y, M, D, h, m, s ]
+                           var t = data0[i].lastUpdated.split(/[- :]/);
+
+                           // Apply each element to the Date function
+                           var timeStampNode0 = new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5]);
+
+                           var t2 = data2[recordInd].lastUpdated.split(/[- :]/);
+                           var timeStampNode2 = new Date(t2[0], t2[1]-1, t2[2], t2[3], t2[4], t2[5]);
                            
                            var indNodeToBeUpdated = 2
                            var query = `UPDATE movies SET title = "${data0[i].title}" WHERE id = ${data0[i].id}`
