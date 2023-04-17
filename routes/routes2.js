@@ -59,8 +59,7 @@ async function recover0(){
             console.log("log for transaction no " + currTransactionNo + ": ")
             var currLogs = []
             var k = 0
-            console.log("data2:")
-            console.log(data2)
+            
             // store logs with current transaction No j
             for (let i = 0; i < data2.length; i++)
             {
@@ -577,12 +576,7 @@ async function reintegrate0and1() {
             // get all movies from node 0 that are before 1980
             await db[0].query("SELECT * FROM movies WHERE year < 1980")
             .then (async data0 => {
-               
-               //console.log(data1)
-               console.log("data node1: " + data1.length)
-               console.log("data node0: " + data0.length)
-               // for each movie <1980 in node 0
-               //console.log(data)
+
                for (let i = 0; i < data0.length; i++) // 
                {
                   
@@ -593,16 +587,13 @@ async function reintegrate0and1() {
                   {
                      colId1[j] = data1[j].id
                   }
-                
-                  //console.log(colId)
-                  console.log("i: " + i)
                   // if node 1 already has a record corresponding to the current movie from node 0
                   if (colId1.includes(data0[i].id))
                   {
                      try{
                            // update node 1 with the values from node 0
                            // find in data1 the record that matches with data0[i]
-                           
+                           console.log("PUMASOK SA TRY 1");
                            var found = false
                            var recordInd = 0
                            while(!found)
@@ -612,24 +603,40 @@ async function reintegrate0and1() {
                               else
                                  recordInd++
                            }
+                           console.log("PUMASOK SA TRY 2");
 
-
-                     
+                           
                            // Split timestamp into [ Y, M, D, h, m, s ]
-                           var t0 = data0[i].lastUpdated.split(/[- :]/);
-                           var t1 = data1[recordInd].lastUpdated.split(/[- :]/);
+                           try {
+                              var t0 = data0[i].lastUpdated.split(/[- :]/);
+                              var t1 = data1[recordInd].lastUpdated.split(/[- :]/);
+                           } catch (error) {
+                              console.log("ERROR AFTER TRY 2 data0" + data0[i].lastUpdated)
+                              console.log("ERROR AFTER TRY 2 data1" + data1[recordInd].lastUpdated)
+                              
+                              console.log("ERROR AFTER TRY 2" + error)
+                           }
 
+                           console.log("PUMASOK SA TRY 3");
                            // Apply each element to the Date function
                            var timeStampNode0 = new Date(t0[0], t0[1]-1, t0[2], t0[3], t0[4], t0[5]);
                            var timeStampNode1 = new Date(t1[0], t1[1]-1, t1[2], t1[3], t1[4], t1[5]);
-                           
+                           console.log("PUMASOK SA TRY 4");
                            var indNodeToBeUpdated = 1
                            var query = `UPDATE movies SET title = "${data0[i].title}", lastUpdated = "${data0[i].lastUpdated}" WHERE id = ${data0[i].id}`
                            
+                           console.log("PUMASOK SA TRY 5");
+
+                           console.log("REINTEG DEBUG 1(node0): " + data0[i].title)
+                           console.log("REINTEG DEBUG 2(node1): " + data1[recordInd].title)
                            if (timeStampNode1 > timeStampNode0) {
+                           
                               indNodeToBeUpdated = 0
                               query = `UPDATE movies SET title = "${data1[recordInd].title}", lastUpdated = "${data1[i].lastUpdated}"  WHERE id = ${data1[recordInd].id}`
+                         
                            }
+                           console.log("REINTEG DEBUG 3: " + indNodeToBeUpdated)
+                           console.log("REINTEG 4: " + query)
 
                            
                            await db[indNodeToBeUpdated].query(query)
