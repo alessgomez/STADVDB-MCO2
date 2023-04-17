@@ -640,7 +640,7 @@ async function reintegrate0and1() {
                            }
 
                            
-                           await db[indNodeToBeUpdated].query(query)
+                           await db[0].query(`UPDATE movies SET title = "${data0[i].title}", lastUpdated = "${data0[i].lastUpdated}" WHERE id = ${data0[i].id}`)
                            .then (() => {
                               console.log("updated node " + indNodeToBeUpdated)
                               return new Promise(function(resolve, reject) {
@@ -1009,8 +1009,8 @@ app.get('/', async (req, res) => {
          console.log("SETUP ERROR: " + error);
       }
       
-      //await recoverAll()
-      //await clearAllLogs()
+      await recoverAll()
+      await clearAllLogs()
       await reintegrateAll()
       .then (async res => {
          console.log("reintegration should be done")
