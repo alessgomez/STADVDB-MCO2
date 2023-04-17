@@ -644,26 +644,20 @@ async function reintegrate0and1() {
                            // Split timestamp into [ Y, M, D, h, m, s ]
 
 
+                           console.log("data1: ")
                            console.log(new Date(data1[recordInd].lastUpdated.toString()))
 
-                           try {
-                              if (data1[recordInd].lastUpdated > data0[i].lastUpdated) {
-                           
-                                 indNodeToBeUpdated = 0
-                                 query = `UPDATE movies SET title = "${data1[recordInd].title}", lastUpdated = "${data1[i].lastUpdated}"  WHERE id = ${data1[recordInd].id}`
-                              }
-                           } catch (error) {
-                              console.log("ERROR AFTER TRY 2 data0" + data0[i].lastUpdated)
-                              console.log("ERROR AFTER TRY 2 data1" + data1[recordInd].lastUpdated)
-                              console.log("ERROR AFTER TRY 2" + error)
-
-                              if (data0[i].lastUpdated == null && data1[recordInd] != null)
-                              {
-                                 indNodeToBeUpdated = 0
-                                 query = `UPDATE movies SET title = "${data1[recordInd].title}", lastUpdated = "${data1[i].lastUpdated}"  WHERE id = ${data1[recordInd].id}`
-                              }
-
+                           if (data0[i].lastUpdated == null && data1[recordInd] != null)
+                           {
+                              indNodeToBeUpdated = 0
+                              query = `UPDATE movies SET title = "${data1[recordInd].title}", lastUpdated = "${data1[i].lastUpdated}"  WHERE id = ${data1[recordInd].id}`
                            }
+                           else if (data1[recordInd].lastUpdated > data0[i].lastUpdated) {
+                           
+                              indNodeToBeUpdated = 0
+                              query = `UPDATE movies SET title = "${data1[recordInd].title}", lastUpdated = "${data1[i].lastUpdated}"  WHERE id = ${data1[recordInd].id}`
+                           }
+   
 
                            console.log("PUMASOK SA TRY 3");
                            // Apply each element to the Date function
