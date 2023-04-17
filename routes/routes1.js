@@ -646,9 +646,6 @@ async function reintegrate0and1() {
                                  });
                               
                            })
-            
-                        
-
                      }
                      catch (error) {
                         
@@ -661,7 +658,7 @@ async function reintegrate0and1() {
                      console.log("does not include")
                      try{
                            // insert a new record in node 1
-                           const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor) VALUES (${data0[i].id}, "${data0[i].title}", ${data0[i].year}, ${data0[i].rating}, '${data0[i].genre}', '${data0[i].director}', '${data0[i].actor}')`
+                           const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${data0[i].id}, "${data0[i].title}", ${data0[i].year}, ${data0[i].rating}, '${data0[i].genre}', '${data0[i].director}', '${data0[i].actor}', '${data0[i].lastUpdated}')`
                            console.log(query)
                            await db[1].query(query)
                            .then (() => {
@@ -697,7 +694,7 @@ async function reintegrate0and1() {
                         console.log("does not include")
                         try{
                               // insert a new record in node 0
-                              const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor) VALUES (${data1[i].id}, "${data1[i].title}", ${data1[i].year}, ${data1[i].rating}, '${data1[i].genre}', '${data1[i].director}', '${data1[i].actor}')`
+                              const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${data1[i].id}, "${data1[i].title}", ${data1[i].year}, ${data1[i].rating}, '${data1[i].genre}', '${data1[i].director}', '${data1[i].actor}', '${data1[i].lastUpdated}')`
                               console.log(query)
                               await db[0].query(query)
                               .then (() => {
@@ -812,7 +809,7 @@ async function reintegrate0and2() {
                      console.log("does not include")
                      try{
                            // insert a new record in node 2
-                           const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor) VALUES (${data0[i].id}, "${data0[i].title}", ${data0[i].year}, ${data0[i].rating}, '${data0[i].genre}', '${data0[i].director}', '${data0[i].actor}')`
+                           const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${data0[i].id}, "${data0[i].title}", ${data0[i].year}, ${data0[i].rating}, '${data0[i].genre}', '${data0[i].director}', '${data0[i].actor}', '${data1[i].lastUpdated}')`
                            console.log(query)
                            await db[2].query(query)
                            .then (() => {
@@ -848,7 +845,7 @@ async function reintegrate0and2() {
                         console.log("does not include")
                         try{
                               // insert a new record in node 0
-                              const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor) VALUES (${data2[i].id}, "${data2[i].title}", ${data2[i].year}, ${data2[i].rating}, '${data2[i].genre}', '${data2[i].director}', '${data2[i].actor}')`
+                              const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${data2[i].id}, "${data2[i].title}", ${data2[i].year}, ${data2[i].rating}, '${data2[i].genre}', '${data2[i].director}', '${data2[i].actor}','${data1[i].lastUpdated}')`
                               console.log(query)
                               await db[0].query(query)
                               .then (() => {
@@ -1001,7 +998,11 @@ function insertInNewMaster(req, lastUpdated) {
 
 app.get('/', async (req, res) => {
    try { 
-      await setUpMySQL()
+      try {
+         await setUpMySQL()
+      } catch(error) {
+         console.log("SETUP ERROR: " + error);
+      }
       await recoverAll()
       await clearAllLogs()
       await reintegrateAll()
