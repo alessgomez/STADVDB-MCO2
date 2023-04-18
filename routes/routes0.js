@@ -1298,7 +1298,7 @@ app.post('/insertMovie', async(req, res) => {
    })
    .then(result => {
       logDb[slaveInd].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'COMMIT')`) 
-      db[2].destroy() // -> FOR DEMO
+      //db[2].destroy() // -> FOR DEMO
    })
    .then(async result => {
       try {

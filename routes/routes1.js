@@ -1545,7 +1545,7 @@ app.post('/update/:id/:year/:title', async(req, res) => {
    .then(result => {
       console.log("888")
       logDb[0].query(`INSERT INTO log(transaction_no, query) VALUES (${transacNo}, 'COMMIT')`)
-      db[0].destroy() // -> for DEMO 
+      //db[0].destroy() // -> for DEMO 
    })
    .then(async result => {
       console.log("999")
