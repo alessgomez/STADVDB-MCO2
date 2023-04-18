@@ -863,7 +863,7 @@ async function reintegrate0and2() {
                      //console.log("does not include")
                      try{
                            // insert a new record in node 2
-                           const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${data0[i].id}, "${data0[i].title}", ${data0[i].year}, ${data0[i].rating}, '${data0[i].genre}', '${data0[i].director}', '${data0[i].actor}', '${data1[i].lastUpdated}')`
+                           const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${data0[i].id}, "${data0[i].title}", ${data0[i].year}, ${data0[i].rating}, '${data0[i].genre}', '${data0[i].director}', '${data0[i].actor}', '${data0[i].lastUpdated}')`
                            
                            await db[2].query(query)
                            .then (() => {
@@ -899,7 +899,7 @@ async function reintegrate0and2() {
                         //console.log("does not include")
                         try{
                               // insert a new record in node 0
-                              const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${data2[i].id}, "${data2[i].title}", ${data2[i].year}, ${data2[i].rating}, '${data2[i].genre}', '${data2[i].director}', '${data2[i].actor}','${data1[i].lastUpdated}')`
+                              const query = `INSERT INTO movies (id, title, year, rating, genre, director, actor, lastUpdated) VALUES (${data2[i].id}, "${data2[i].title}", ${data2[i].year}, ${data2[i].rating}, '${data2[i].genre}', '${data2[i].director}', '${data2[i].actor}','${data2[i].lastUpdated}')`
                               
                               await db[0].query(query)
                               .then (() => {
